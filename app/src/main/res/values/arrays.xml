@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Strings related to Settings -->
+
+    <string-array name="tractor_kind_entries_pref">
+        <item>Truck</item>
+        <item>Tractor</item>
+    </string-array>
+    <string-array name="tractor_kind_values_pref">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string name="def_tractor_kind" translatable="false">1</string>
+
+    <string-array name="circuits_entries_pref">
+        <item>1 circuits</item>
+        <item>2 circuits</item>
+        <item>3 circuits</item>
+        <item>4 circuits</item>
+    </string-array>
+    <string-array name="circuits_entry_values_pref">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string name="def_circuits" translatable="false">1</string>
+
+    <string-array name="type_circuits_entries_pref">
+        <item>Unilateral</item>
+        <item>Bilateral</item>
+    </string-array>
+    <string-array name="type_circuits_entry_values_pref">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string name="def_type_circuits" translatable="false">2</string>
+
+    <string-array name="pref_type_mechanism_titles">
+        <item>2 blocks</item>
+        <item>1 block only on a trailer</item>
+        <item>1 block on a tractor for all car</item>
+        <item>1 block on a trailer for all car</item>
+    </string-array>
+    <string-array name="pref_type_mechanism_values">
+        <item>2</item>
+        <item>1</item>
+        <item>4</item>
+        <item>3</item>
+    </string-array>
+    <string name="def_type_mechanism" translatable="false">2</string>
+
+    <string-array name="pref_type_sms_frequency">
+        <item>1 per day</item>
+        <item>2 per day</item>
+        <item>1 to 2 days</item>
+    </string-array>
+    <string-array name="pref_type_sms_frequency_values">
+        <item>24</item><!--86400000-->
+        <item>12</item><!--43200000-->
+        <item>48</item><!--172800000-->
+    </string-array>
+    <string name="def_sms_frequency" translatable="false">24</string>
+
+    <string name="def_wheel_formula" translatable="false">4x2</string>
+    <string-array name="pref_type_wheel_formula">
+        <item>6x4</item>
+        <item>6x2</item>
+        <item>4x2</item>
+        <item>@string/other</item>
+    </string-array>
+
+</resources>

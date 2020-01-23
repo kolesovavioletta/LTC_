@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="variables_master">
+        <item>Контур1</item>
+        <item>Контур2</item>
+        <item>Контур3</item>
+        <item>Контур4</item>
+    </string-array>
+
+    <string-array name="variables_trailer">
+        <item>Прицеп-контур1</item>
+        <item>Прицеп-контур2</item>
+        <item>Прицеп-контур3</item>
+        <item>Прицеп-контур4</item>
+    </string-array>
+</resources>

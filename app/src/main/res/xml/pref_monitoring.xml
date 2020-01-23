@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:icon="@drawable/ic_drafts_black_24dp"
+        android:title="@string/monitoring">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="is_monitoring_event"
+            android:title="@string/monitoring" />
+
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:key="monitoring_phone_1_et"
+            android:title="@string/phone" />
+        <!--<com.violettakolesova.truckloadcontrol.ui.custom.ConditionalEditTextPreference
+                android:dependency="monitoring"
+                android:key="phone_2"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/phone" />-->
+        <com.kolesova_violetta.ltc.ui.custom.ListPreferenceShowSummary
+            android:defaultValue="@string/def_sms_frequency"
+            android:dependency="is_monitoring_event"
+            android:entries="@array/pref_type_sms_frequency"
+            android:entryValues="@array/pref_type_sms_frequency_values"
+            android:key="monitoring_frequency_sms_list"
+            android:title="@string/SMS_frequency" />
+
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="12:00"
+            android:dependency="is_monitoring_event"
+            android:key="monitoring_time_sms_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/Time_SMS" />
+
+        <Preference
+            android:key="info"
+            android:selectable="false"
+            android:title="@string/notif_title_note"
+            android:summary="@string/notif_info_monitoring_correct_work"/>
+    </PreferenceCategory>
+</PreferenceScreen>

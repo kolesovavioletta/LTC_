@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="circuits_entries_pref">
+        <item>1 контур</item>
+        <item>2 контура</item>
+        <item>3 контура</item>
+        <item>4 контура</item>
+    </string-array>
+
+    <string-array name="tractor_kind_entries_pref">
+        <item>Грузовик</item>
+        <item>Тягач</item>
+    </string-array>
+
+    <string-array name="type_circuits_entries_pref">
+        <item>односторонний</item>
+        <item>двусторонний</item>
+    </string-array>
+
+    <string-array name="pref_type_mechanism_titles">
+        <item>2 блока</item>
+        <item>1 блок только для прицепа</item>
+        <item>1 блок на тягаче в сцепке</item>
+        <item>1 блок на прицепе в сцепке</item>
+    </string-array>
+
+    <string-array name="pref_type_sms_frequency">
+        <item>1 раз в день</item>
+        <item>2 раза в день</item>
+        <item>1 раз в 2 дня</item>
+    </string-array>
+
+</resources>

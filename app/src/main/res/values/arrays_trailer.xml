@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="marks_trailer">
+        <item>МАЗ</item>
+        <item>Тонар</item>
+        <item>KRONE</item>
+        <item>KOEGEL / KOGEL </item>
+        <item>GRUNWALD</item>
+        <item>WIELTON</item>
+        <item>KASSBOHRER</item>
+        <item>Schmitz</item>
+        <item>@string/other</item>
+    </string-array>
+    <string name="def_mark_trailer" translatable="false">МАЗ</string>
+
+    <string-array name="type_trailer">
+        <item>@string/def_type_trailer</item>
+        <item>Tilt</item>
+        <item>Container ship</item>
+        <item>Trawl</item>
+        <item>Dump truck</item>
+        <item>@string/other</item>
+    </string-array>
+    <string name="def_type_trailer">Refrigerator</string>
+</resources>

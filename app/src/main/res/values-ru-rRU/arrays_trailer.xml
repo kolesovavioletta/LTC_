@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="type_trailer">
+        <item>Рефрижератор</item>
+        <item>Тентованный</item>
+        <item>Контейнеровоз</item>
+        <item>Трал</item>
+        <item>Самосвал</item>
+        <item>@string/other</item>
+    </string-array>
+</resources>

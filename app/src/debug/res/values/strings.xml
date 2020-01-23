@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="icon_path" translatable="false">@drawable/rotated_icon</string>
+</resources>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:id="@+id/start_calibration"
+        android:key="calibration"
+        android:saveEnabled="true"
+        android:summary="@string/calibration_process"
+        android:title="@string/start_calibration"
+        app:enabled="false" />
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="calibration_switch"
+        android:title="@string/details_calibration"
+        android:visibility="gone"
+        tools:visibility="gone" />
+
+    <PreferenceCategory
+        android:dependency="calibration_switch"
+        android:icon="@drawable/trailer_icon"
+        android:key="tractor_category"
+        android:layout="@layout/pref_category_style"
+        android:title="@string/tractor"
+        android:visibility="gone"
+        app:enabled="false"
+        tools:visibility="gone">
+
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="tractor_axle_1_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:textSize="8sp"
+            android:title="@string/axes_1" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="tractor_axle_2_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_2" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="tractor_axle_3_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_3" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="tractor_axle_4_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_4" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="tractor_axle_5_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_5" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:enabled="false"
+        android:icon="@drawable/trailer_icon_3"
+        android:key="trailer_category"
+        android:layout="@layout/pref_category_style"
+        android:title="@string/trailer"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="trailer_axle_1_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_1" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="trailer_axle_2_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_2" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="trailer_axle_3_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_3" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="trailer_axle_4_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_4" />
+        <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+            android:defaultValue="0"
+            android:key="trailer_axle_5_et"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/axes_5" />
+    </PreferenceCategory>
+
+    <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+        android:key="calibration_name_et"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/calibration_name"
+        app:enabled="false" />
+    <com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference
+        android:key="calibration_date_et"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/date"
+        app:enabled="false" />
+
+    <Preference
+        android:key="info"
+        android:selectable="false"
+        android:title="@string/notif_title_note"
+        android:summary="@string/notif_info_calibration_correct_work"/>
+</PreferenceScreen>

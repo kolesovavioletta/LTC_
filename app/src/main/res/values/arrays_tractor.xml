@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="def_marks_tractor" translatable="false">DAF</string>
+    <string name="def_model_tractor" translatable="false">XF95</string>
+
+    <string-array name="marks_tractor">
+        <item>DAF</item>
+        <item>MAN</item>
+        <item>Iveco</item>
+        <item>VOLVO</item>
+        <item>Scania</item>
+        <item>Mercedes</item>
+        <item>КамАЗ</item>
+        <item>МАЗ</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <!--Next is models for other marks-->
+
+    <string-array name="DAF">
+        <item>XF95</item>
+        <item>XF105</item>
+        <item>XF106</item>
+        <item>CF75</item>
+        <item>CF85</item>
+        <item>LF</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="MAN">
+        <item>TGX</item>
+        <item>TGL</item>
+        <item>TGS</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="Iveco">
+        <item>Stralis</item>
+        <item>Trakker</item>
+        <item>EuroСargo</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="VOLVO">
+        <item>FH</item>
+        <item>FM</item>
+        <item>FH4</item>
+        <item>FM4</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="Scania">
+        <item>P-Series</item>
+        <item>R-Series</item>
+        <item>G-Series</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="Mercedes">
+        <item>Actros</item>
+        <item>Arocs</item>
+        <item>Axor</item>
+        <item>Atego</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="КамАЗ">
+        <item>5490</item>
+        <item>54901</item>
+        <item>@string/other</item>
+    </string-array>
+</resources>

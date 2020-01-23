@@ -1,0 +1,157 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Axle load control</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <string name="pref_header_general">General</string>
+
+    <!-- Example settings for Notifications -->
+
+    <string name="network">Network</string>
+    <string name="max_axle_load">Max axle load</string>
+    <string name="maximum_vehicle_weight">Maximum vehicle weight</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="ip" translatable="false">IP</string>
+    <string name="number_circuits">The number of circuits</string>
+    <string name="variable_left_circuits">The name of the variable to the left of the circuits of the tractor</string>
+    <string name="variable_right_circuits">The name of the variable to the right of the circuits of the tractor</string>
+    <string name="number_axes">Number of axes</string>
+    <string name="tractor">Tractor/Truck</string>
+    <string name="trailer">Trailer/Semi-trailer</string>
+    <string name="left_circuits">The left circuits</string>
+    <string name="right_circuits">The right circuits</string>
+    <string name="circuits_type">The circuits type</string>
+    <string name="circuits">The circuits </string>
+    <string name="variable_name">Variable name</string>
+    <string name="kind_car">Kind of car</string>
+    <string name="truck">Truck</string>
+    <string name="unsafe_change">Unsafe change. You sure?</string>
+    <string name="cancel">Cancel</string>
+    <string name="dangerous_warning">Changing this parameter can disable the system!</string>
+    <string name="axes_1">The axes 1</string>
+    <string name="axes_2">The axes 2</string>
+    <string name="axes_3">The axes 3</string>
+    <string name="axes_4">The axes 4</string>
+    <string name="axes_5">The axes 5</string>
+    <string name="calibration">Calibration</string>
+    <string name="adc">ADC value</string>
+    <string name="err_count_axes_tractor">That is not a valid number of axes for tractor/truck</string>
+    <string name="err_count_axes_trailer">That is not a valid number of axes for trailer</string>
+    <string name="err_no_variables">No variables set</string>
+    <string name="no_connection">No connection</string>
+    <string name="start_calibration">Start calibration</string>
+    <string name="calibration_process">Start the calibration process</string>
+    <string name="circ_under_cab_yes">The axle under the cab has a contour</string>
+    <string name="adc_truck_tractor">The ADC value of the truck/tractor</string>
+    <string name="adc_trailer">The ADC value for trailer/semi-trailer</string>
+    <string name="no_circuits">There\'s no circuits</string>
+    <string name="pair_contours">Pair of contours </string>
+    <string name="notification_for_err_sensor">Enable sensor error notifications</string>
+    <string name="error">Error</string>
+    <string name="err_count_axes">That is not a valid number of axes</string>
+    <string name="details_calibration">Details of calibration</string>
+    <string name="calibration_success_end">Calibration completed successfully</string>
+    <string name="calibration_not_completed">Calibration not completed</string>
+    <string name="calibraion_not_completed_message">You have changed only part of the data. Changes to the current window will not be saved. To continue the calibration?</string>
+    <string name="continue_w">Next</string>
+    <string name="exit">Exit</string>
+    <string name="dialog_button_back">Back</string>
+    <string name="dialog_button_next">Next</string>
+    <string name="dialog_button_break_w">Break</string>
+    <string name="CAPTCHA">CAPTCHA</string>
+    <string name="wait_please">Please wait</string>
+    <string name="enter_number">Enter the number</string>
+    <string name="err_no_conection_in_calibration">Without connection to the sensors, calibration data cannot be saved. Be careful!</string>
+    <string name="monitoring">Monitoring</string>
+    <string name="phone">Phone number</string>
+    <string name="SMS_frequency">SMS frequency</string>
+    <string name="Time_SMS">Time of the first SMS by MSC</string>
+    <string name="fio">Full name</string>
+    <string name="tractor_number">Tractor number</string>
+    <string name="registration">Registration</string>
+    <string name="warning_latin_letters">State number must be entered in Latin letters</string>
+    <string name="type_installation">Type of installation</string>
+    <string name="other">Other</string>
+    <string name="mark">Mark</string>
+    <string name="model">Model</string>
+    <string name="state_number">State number</string>
+    <string name="vin" translatable="false">VIN</string>
+    <string name="id_trailer">ID trailer</string>
+    <string name="id_trailer_help">1. Enter the trailer ID - the number indicated on the trailer block.\n2. Click OK.\n3. Turn off for 10s and turn on the ignition to connect to the new trailer.</string>
+    <string name="driver_name">Driver name</string>
+    <string name="driver_name_hint">Enter last name and transliteration initials</string>
+    <string name="calibration_name">Responsible for calibration</string>
+    <string name="welcome">Welcome</string>
+    <string name="warning_selected_variable">This variable is already selected</string>
+    <string name="hint_resend_sms">Enter the number of hours to resend SMS</string>
+    <string name="trailer_type">Trailer type</string>
+    <string name="wheel_formula">Wheel formula</string>
+    <string name="wifi_name">Wi-Fi name</string>
+    <string name="password">Password</string>
+    <string name="attention_without_connect_device">Attention! Without connecting to the device, application functionality is not available</string>
+    <string name="property_after_reboot">The new tincture will become active after rebooting the device</string>
+
+    <!-- Preference Titles -->
+
+    <!-- Messages Preferences -->
+
+    <!-- Sync Preferences -->
+    <string name="header_settings_saved_info_about_car">Machine configuration</string>
+    <string name="change_tractor">Change tractor</string>
+    <string name="change_trailer">Change trailer</string>
+    <string name="date">Date</string>
+    <string name="fio_not_saved">Full name not saved</string>
+    <string name="send_sms">Send SMS to the owner of the fleet</string>
+    <string name="notification_title_connect">Connect to the device, turn on the GPS</string>
+    <string name="send_sms_5_min">After 5 minutes, sending data to the owner of the fleet</string>
+    <string name="err_version_app">Your device is not supported by this version, update the application through Truck-Help.com. If you have the latest version of the application installed, contact Truck-Help.com support</string>
+    <string name="note_send_sms">Important: An SMS with the results will be sent to the service organization, payment of SMS at the rate of your operator</string>
+    <string name="year_of_issue">Year of issue</string>
+    <string name="sms_delivered">SMS delivered</string>
+    <string name="sms_not_delivered">SMS not delivered</string>
+    <string name="sms_sent">SMS sent</string>
+    <string name="sms_not_sent">Failed to send SMS</string>
+    <string name="not_latest_version">Your device is not supported by this version, update the application through Truck-Help.com. If you have the latest version of the application installed, contact Truck-Help.com support</string>
+    <string name="no_phone">Error: Phone number not set</string>
+    <string name="notif_warning_tractor_not_save">Tractor data could not be saved to the device</string>
+    <string name="notif_warning_trailer_not_save">Trailer data could not be saved to the device</string>
+    <string name="notif_info_no_permission_sms">You are forbidden to send SMS</string>
+    <string name="notif_error_name_not_saved">Connection error: Name not saved</string>
+    <string name="notif_error_wrong_data">Wrong data</string>
+    <string name="notif_err_sensor">Sensor error</string>
+    <string name="notif_err_connection">Connection error</string>
+    <string name="notif_err_sensor_n">Circuit sensor %1$s produces a value less than the ADC value at zero load. Replace the sensor.</string>
+    <string name="notif_info_no_permission_wifi_state">Without access to data about the block, the application functionality is blocked. To change permissions, visit application settings</string>
+    <string name="notif_err_gps_off">Turn on GPS and resend the message</string>
+    <string name="notif_title_note">Note</string>
+    <string name="notif_info_monitoring_correct_work">For the monitoring to work correctly, check that the application is allowed:\ n - send notifications;\n - send SMS;\n - get the coordinates of your location;\n - perform auto start;\n - work in the background.</string>
+    <string name="notif_err_repeat_calibration">Repeat calibration</string>
+    <string name="header_settings_diagnostics">Diagnostics</string>
+    <string name="header_settings_about_us">About us</string>
+
+    <string name="contacts_site" translatable="false">Truck-help.com</string>
+    <string name="contacts_email">Connect with us: info@truck-help.com</string>
+    <string name="contacts_developer">Developer: kolesova.violetta@yandex.ru</string>
+    <string name="notif_info_calibration_correct_work">For successful calibration, we recommend that you record the weight reading before the end of the procedure. Set the car on a flat surface, release the parking brake, set the suspension to neutral (transport) position, wait for the pressure to stabilize.</string>
+    <string name="notif_debug_waiting_connect">Waiting for a network connection</string>
+    <string name="notif_debug_status_allowed">allowed</string>
+    <string name="notif_debug_receive_data">Receive data from the device</string>
+    <string name="notif_debug_receive_data_ok">Data successfully received from the device</string>
+    <string name="notif_debug_receive_data_fail">Data not received from device</string>
+    <string name="notif_debug_receive_data_monitoring">Downloading data from a monitoring device</string>
+    <string name="notif_debug_receive_data_monitoring_ok">Monitoring data upload completed</string>
+    <string name="notif_debug_receive_data_monitoring_fail">Failed to load monitoring data</string>
+    <string name="notif_debug_connected">Connected to device: %1$s</string>
+    <string name="notif_debug_status_pass">passed</string>
+    <string name="notif_debug_status_not_allowed">not allowed</string>
+    <string name="notif_debug_status_fail">failed</string>
+    <string name="notif_debug_authentication">Authentication: %1$s</string>
+    <string name="notif_debug_location_request">Location request: %1$s</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="icon_path" translatable="false" tools:ignore="ReferenceType">@mipmap/icon</string>
+    <string name="dialog_button_save">Save</string>
+</resources>

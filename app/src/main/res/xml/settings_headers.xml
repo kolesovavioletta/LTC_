@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:icon="@drawable/truck_icon"
+        android:key="config"
+        android:title="@string/header_settings_saved_info_about_car"/>
+
+    <Preference
+        android:icon="@drawable/ic_drafts_black_24dp"
+        android:title="@string/monitoring"
+        android:key="monitoring">
+    </Preference>
+
+    <Preference
+        android:icon="@drawable/ic_build_black_24dp"
+        android:title="@string/header_settings_diagnostics"
+        android:key="diagnostics">
+    </Preference>
+
+    <Preference
+        android:icon="@drawable/logo_company"
+        android:title="@string/header_settings_about_us"
+        android:key="about_us">
+    </Preference>
+</PreferenceScreen>
