@@ -16,6 +16,9 @@ import com.kolesova_violetta.ltc.datastore.device_as_server.DeviceServer;
 
 import org.json.JSONObject;
 
+/**
+ * Передача/получение данных с датчика
+ */
 public class Repository {
 
     private RequestQueue mQueue;

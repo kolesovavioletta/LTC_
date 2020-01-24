@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Обработчики над примитивами, коллекциями
+ */
 public class Converters {
 
     public static int sumValuesOfStringList(List<String> list) {

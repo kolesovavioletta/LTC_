@@ -16,7 +16,7 @@ import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonTrailer
 import java.util.List;
 
 public class CalcTrailerCalibrCoefExecutor extends CalcCalibrCoefExecutor {
-    private int U_0 = BuildConfig.CALIBRATION_COEF_TRAILER; //АЦП при нулевой нагрузке (при калибровке)
+    private int U_0 = 1;/*BuildConfig.CALIBRATION_COEF_TRAILER;*/ //АЦП при нулевой нагрузке (при калибровке)
 
     public CalcTrailerCalibrCoefExecutor(Repository repository) {
         super(repository);

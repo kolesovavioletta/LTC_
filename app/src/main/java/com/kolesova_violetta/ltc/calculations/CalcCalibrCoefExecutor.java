@@ -7,12 +7,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
 
+import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.Circuit;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
 
 public abstract class CalcCalibrCoefExecutor {
     private Repository mRepository;
@@ -33,7 +36,7 @@ public abstract class CalcCalibrCoefExecutor {
         Circuit curCirc; // Контур
         String var; // Переменная контура (КонтурX или Прицеп-контурХ)
         int numCirc; // ...
-        int iAcd; // ...
+        int iAcd = 0; // ...
         for (int i = 0; i < circuits.size(); i++) {
             curCirc = circuits.get(i);
             var = curCirc.getVar1();

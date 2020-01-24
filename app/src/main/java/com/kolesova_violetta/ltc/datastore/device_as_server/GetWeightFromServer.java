@@ -7,6 +7,9 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 
+/**
+ * Цикличное получение масс
+ */
 public class GetWeightFromServer extends AsyncTask<Void, JSONObject, Void> {
     private final Long SLEEP = 1000L; //milliseconds. This is the data refresh period
     private final Long LONG_SLEEP = 10 * 1000L; //10 seconds. This is the data refresh period

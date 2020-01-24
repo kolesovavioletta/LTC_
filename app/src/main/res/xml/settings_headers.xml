@@ -19,8 +19,7 @@
     </Preference>
 
     <Preference
-        android:icon="@drawable/logo_company"
         android:title="@string/header_settings_about_us"
-        android:key="about_us">
+        android:key="about_us"> <!--android:icon="@drawable/logo_company"-->
     </Preference>
 </PreferenceScreen>

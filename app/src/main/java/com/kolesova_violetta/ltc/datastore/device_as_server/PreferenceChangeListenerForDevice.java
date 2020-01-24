@@ -1,11 +1,15 @@
 package com.kolesova_violetta.ltc.datastore.device_as_server;
 
+import com.kolesova_violetta.ltc.mock.AlarmSetting;
 import com.kolesova_violetta.ltc.BuildConfig;
+import com.kolesova_violetta.ltc.mock.MonitoringCache;
 import com.kolesova_violetta.ltc.datastore.Repository;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
+import static com.kolesova_violetta.ltc.mock.Const.PREF_DRIVER_NAME;
 import static com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment.PREF_PHONE_1;
 
 public class PreferenceChangeListenerForDevice {

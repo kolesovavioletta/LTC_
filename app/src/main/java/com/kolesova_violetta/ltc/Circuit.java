@@ -10,13 +10,16 @@ interface CalcCoefficient {
     float calc(final int abcd, final int acd) throws ArithmeticException;
 }
 
+/**
+ * Контур
+ */
 public class Circuit implements CalcCoefficient {
-    private int axesCount;
-    private String type;
-    private String var1;
-    private String var2;
-    private int weight;
-    private int[] weightAxes;
+    private int axesCount; // количество осей
+    private String type; // одностор / двустор
+    private String var1; // переменная левого колеса / переменная контура
+    private String var2; // переменная правого колеса
+    private int weight; // вес контура
+    private int[] weightAxes; // вес каждой оси контура
 
     public Circuit() {
     }

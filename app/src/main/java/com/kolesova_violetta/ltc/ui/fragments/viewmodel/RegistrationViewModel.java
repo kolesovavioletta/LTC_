@@ -51,7 +51,6 @@ public class RegistrationViewModel extends ViewModel {
      */
     public LiveData<Response<Void, VolleyError>> execRegistration(String newDriverName) {
         progressVisibilityLiveData.postValue(true);
-        //saveDataToSharedPreference(newDriverName);
         return saveDataToDevice(newDriverName);
     }
 

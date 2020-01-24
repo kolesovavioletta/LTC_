@@ -5,6 +5,9 @@ import android.util.AttributeSet;
 
 import androidx.preference.ListPreference;
 
+/**
+ * Preference с автоматическим обновлением значения в Summary
+ */
 public class ListPreferenceShowSummary extends ListPreference {
     public ListPreferenceShowSummary(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);

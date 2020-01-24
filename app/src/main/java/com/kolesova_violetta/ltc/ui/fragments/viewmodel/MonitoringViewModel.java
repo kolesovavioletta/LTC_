@@ -4,7 +4,7 @@ import android.content.Context;
 
 import androidx.lifecycle.ViewModel;
 
-import com.kolesova_violetta.ltc.sms.AlarmSetting;
+import com.kolesova_violetta.ltc.mock.AlarmSetting;
 
 public class MonitoringViewModel extends ViewModel {
 

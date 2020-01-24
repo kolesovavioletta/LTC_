@@ -19,8 +19,8 @@ import androidx.preference.Preference;
 import androidx.preference.SwitchPreference;
 
 import com.kolesova_violetta.ltc.R;
+import com.kolesova_violetta.ltc.mock.SmsSender;
 import com.kolesova_violetta.ltc.handlers.TimeHelper;
-import com.kolesova_violetta.ltc.sms.SmsSender;
 import com.kolesova_violetta.ltc.ui.UiHelper;
 import com.kolesova_violetta.ltc.ui.dialogs.TimeDialog;
 import com.kolesova_violetta.ltc.ui.fragments.viewmodel.MonitoringViewModel;
@@ -88,8 +88,7 @@ public class MonitoringPreferenceFragment extends CustomPreferenceFragment {
     }
 
     /*
-     * Показывается диалог для установки времени. Результат выбора сохраняется. (и отображается в summary)
-     * @param preference
+     * Показывается диалог для установки времени. Результат выбора сохраняется и отображается в summary)
      */
     private void showTimePreferenceDialog(EditTextPreference preference) {
         // получение введенного ранее времени
@@ -113,9 +112,11 @@ public class MonitoringPreferenceFragment extends CustomPreferenceFragment {
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
         if (preference.getKey().equals(PREF_MONITORING)) {
+            // При подключении функции мониторинга запросить разрешения, иначе - отменить Alarm
             super.onPreferenceChange(preference, value);
-            if ((boolean) value) return requestPermissionsSendSmsAndGetLocation();
-            else {
+            if ((boolean) value) {
+                return requestPermissionsSendSmsAndGetLocation();
+            } else {
                 mViewModel.monitoringOff(getContext());
                 return true;
             }

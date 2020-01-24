@@ -27,7 +27,7 @@ import java.util.List;
 import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.castErrorLiveData;
 import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.getAnswer;
 import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.getError;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.CIRCUITS_COUNT;
+import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
 
 /**
  * Сохранить коэффициенты калибровки устройства на устройство. Т.к. напряжение у устройства
@@ -86,7 +86,7 @@ public class CalcAndSaveCalibrationData {
     private String mDriverName;
     private int steeringAxleWeight;
 
-    CalcAndSaveCalibrationData(Repository mDeviceRepo, SharedPreferencesRepository mLocalRepo) {
+    public CalcAndSaveCalibrationData(Repository mDeviceRepo, SharedPreferencesRepository mLocalRepo) {
         this.mDeviceRepo = mDeviceRepo;
         this.mLocalRepo = mLocalRepo;
     }

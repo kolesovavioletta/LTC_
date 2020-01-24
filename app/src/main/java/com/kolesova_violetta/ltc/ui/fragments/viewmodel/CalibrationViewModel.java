@@ -12,15 +12,16 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.kolesova_violetta.ltc.BuildConfig;
-import com.kolesova_violetta.ltc.CalcAndSaveCalibrationData;
 import com.kolesova_violetta.ltc.Circuit;
+import com.kolesova_violetta.ltc.mock.SmsSenderAfterCalibration;
+import com.kolesova_violetta.ltc.mock.TractorCache;
+import com.kolesova_violetta.ltc.calculations.CalcAndSaveCalibrationData;
 import com.kolesova_violetta.ltc.datastore.FailCallback;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
 import com.kolesova_violetta.ltc.datastore.SuccessCb;
 import com.kolesova_violetta.ltc.datastore.device_as_server.DeviceQueries;
-import com.kolesova_violetta.ltc.datastore.sh_pref_cache.ConfigCache;
 
 import java.util.Arrays;
 import java.util.List;

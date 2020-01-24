@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -67,7 +68,7 @@ public class CalibrationViewModelTest {
         ld.setValue(response);
         when(calc.start()).thenReturn(ld);
 
-        viewModel.onEndInputWeights().observeForever(observerVoid);
+        viewModel.onEndInputWeights(any(), any()).observeForever(observerVoid);
     }
 
     @Test

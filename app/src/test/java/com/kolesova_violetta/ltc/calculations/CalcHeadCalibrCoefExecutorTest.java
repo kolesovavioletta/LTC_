@@ -3,6 +3,7 @@ package com.kolesova_violetta.ltc.calculations;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.Observer;
 
+import com.kolesova_violetta.ltc.Circuit;
 import com.kolesova_violetta.ltc.calculations.CalcHeadCalibrCoefExecutor;
 import com.kolesova_violetta.ltc.calculations.CalcTrailerCalibrCoefExecutor;
 import com.kolesova_violetta.ltc.datastore.FailCallback;

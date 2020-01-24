@@ -18,6 +18,7 @@ import androidx.preference.SwitchPreference;
 
 import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.R;
+import com.kolesova_violetta.ltc.mock.SmsSender;
 import com.kolesova_violetta.ltc.datastore.FailCallback;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
@@ -25,7 +26,7 @@ import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
 import com.kolesova_violetta.ltc.datastore.device_as_server.try_connect.InternetConnectivityListener;
 import com.kolesova_violetta.ltc.ui.UiHelper;
 import com.kolesova_violetta.ltc.ui.activity.ShowingProgressDialogFromFragment;
-import com.kolesova_violetta.ltc.ui.dialogs.CalibrationDialogFragment;
+import com.kolesova_violetta.ltc.ui.dialogs.CalibrationDialog;
 import com.kolesova_violetta.ltc.ui.dialogs.CaptchaDialog;
 import com.kolesova_violetta.ltc.ui.dialogs.DialogListenerForThreeStandardButtons;
 import com.kolesova_violetta.ltc.ui.dialogs.InteruptCalibrationDialog;
@@ -153,14 +154,14 @@ public class CalibrationPreferenceFragment extends CustomPreferenceFragment
         } else if (dialog instanceof CaptchaDialog) {
             CaptchaDialog captchaDialog = (CaptchaDialog) dialog;
             if (captchaDialog.isFailCaptcha()) showCaptchaDialog();
-        } else if (dialog instanceof CalibrationDialogFragment) {
+        } else if (dialog instanceof CalibrationDialog) {
             onFinishCalibration(dialog);
         }
     }
 
     private void onFinishCalibration(DialogFragment dialog) {
         ((ShowingProgressDialogFromFragment) getActivity()).showProgressDialog(true);
-        CalibrationDialogFragment calibrDialog = (CalibrationDialogFragment) dialog;
+        CalibrationDialog calibrDialog = (CalibrationDialog) dialog;
         LiveData<Response<Void, Throwable>> saveCoefficientLD = mViewModel.onEndInputWeights(
                 calibrDialog.getTractorWeights(), calibrDialog.getTrailerWeights()
         );
@@ -189,7 +190,7 @@ public class CalibrationPreferenceFragment extends CustomPreferenceFragment
             }
         } else if (dialog instanceof InteruptCalibrationDialog) {
             currentWeightDialog.dismiss();
-        } else if (dialog instanceof CalibrationDialogFragment) {
+        } else if (dialog instanceof CalibrationDialog) {
             showDialog(new InteruptCalibrationDialog());
         }
     }
@@ -227,7 +228,7 @@ public class CalibrationPreferenceFragment extends CustomPreferenceFragment
     private void showCalibrationDialogPref() {
         String[] tractorCircuits = mViewModel.getWeightsTractor();
         String[] trailerCircuits = mViewModel.getWeightsTrailer();
-        currentWeightDialog = new CalibrationDialogFragment(tractorCircuits, trailerCircuits);
+        currentWeightDialog = new CalibrationDialog(tractorCircuits, trailerCircuits);
         showDialog(currentWeightDialog);
     }
 

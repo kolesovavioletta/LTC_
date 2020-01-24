@@ -11,6 +11,9 @@ import ru.tinkoff.decoro.slots.SlotValidators;
 import ru.tinkoff.decoro.watchers.FormatWatcher;
 import ru.tinkoff.decoro.watchers.MaskFormatWatcher;
 
+/**
+ * Управление масками для вводимых данных
+ */
 public class InputMaskHandler {
 
     public final static Slot[] TRAILER_STATE_NUMBER = {

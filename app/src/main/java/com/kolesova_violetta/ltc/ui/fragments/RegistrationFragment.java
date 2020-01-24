@@ -20,6 +20,10 @@ import com.kolesova_violetta.ltc.handlers.TextFilters;
 import com.kolesova_violetta.ltc.ui.activity.ShowingProgressDialogFromFragment;
 import com.kolesova_violetta.ltc.ui.fragments.viewmodel.RegistrationViewModel;
 
+/**
+ * Регистрация водителя. Водитель должен ввести ФИО в формате "ФамилияИО"/"ФамилияИ".
+ * ФИО сохраняется на телефоне и на датчик.
+ */
 public class RegistrationFragment extends Fragment implements View.OnClickListener {
 
     private EditText mFullNameEditText;
@@ -75,17 +79,15 @@ public class RegistrationFragment extends Fragment implements View.OnClickListen
         mFullNameEditText.setError(null);
         String name = getFullName();
         if (mViewModel.isCorrectName(name)) {
-            mViewModel
-                    .execRegistration(name)
-                    .observe(this, response -> {
-                        if (response.isSuccess()) {
-                            ExitFromFragment activityAction = (ExitFromFragment) getActivity();
-                            activityAction.exitFromFragment(ExitFromFragment.EXIT_REGISTRATION);
-                        } else {
-                            Toast.makeText(getContext(),
-                                    R.string.notif_error_name_not_saved, Toast.LENGTH_LONG).show();
-                        }
-                    });
+            mViewModel.execRegistration(name).observe(this, response -> {
+                if (response.isSuccess()) {
+                    ExitFromFragment activityAction = (ExitFromFragment) getActivity();
+                    activityAction.exitFromFragment(ExitFromFragment.EXIT_REGISTRATION);
+                } else {
+                    Toast.makeText(getContext(),
+                            R.string.notif_error_name_not_saved, Toast.LENGTH_LONG).show();
+                }
+            });
         } else {
             mFullNameEditText.setError(getString(R.string.notif_error_wrong_data));
         }

@@ -21,6 +21,12 @@ import com.kolesova_violetta.ltc.handlers.TextFilters;
 import com.kolesova_violetta.ltc.ui.custom.ConditionalEditTextPreference;
 import com.kolesova_violetta.ltc.ui.dialogs.DialogWithCloseConditional;
 
+/**
+ * Базовый класс работы с настройками, который:
+ * 1. Отслеживает доступность датчика.
+ * 2. При выходе с окна сохраняет на датчик то, что было изменено.
+ * 3. Удаляет место под изображение для пунктов категорий.
+ */
 public abstract class CustomPreferenceFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener,
         Preference.OnPreferenceChangeListener, InternetConnectivityListener {

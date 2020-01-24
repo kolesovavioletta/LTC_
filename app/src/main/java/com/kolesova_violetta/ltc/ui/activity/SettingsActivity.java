@@ -19,6 +19,10 @@ import com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment;
 import com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment;
 import com.kolesova_violetta.ltc.ui.fragments.SwitchingFragmentsOfSettingAct;
 
+/**
+ * Класс управляет фрагментами и основными графическими событиями (фрагмент с загаловками и
+ * фрагменты действий)
+ */
 public class SettingsActivity extends AppCompatActivity implements SwitchingFragmentsOfSettingAct,
        ShowingProgressDialogFromFragment {
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.Transformations;
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.Circuit;
 import com.kolesova_violetta.ltc.datastore.FailCallback;
 import com.kolesova_violetta.ltc.datastore.Repository;
@@ -16,7 +17,7 @@ import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonHeadRes
 import java.util.List;
 
 public class CalcHeadCalibrCoefExecutor extends CalcCalibrCoefExecutor {
-    private int U_0 = BuildConfig.CALIBRATION_COEF_MASTER; //АЦП при нулевой нагрузке (при калибровке)
+    private int U_0 = 1/*BuildConfig.CALIBRATION_COEF_MASTER*/; //АЦП при нулевой нагрузке (при калибровке)
 
     public CalcHeadCalibrCoefExecutor(Repository repository) {
         super(repository);

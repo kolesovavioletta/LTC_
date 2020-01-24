@@ -2,16 +2,12 @@ package com.kolesova_violetta.ltc.ui.dialogs;
 
 import android.util.Log;
 
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_DRIVER_NAME;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRACTOR_NUMBER;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRACTOR_VIN;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRACTOR_YEAR;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRAILER_ID;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRAILER_NUMBER;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRAILER_VIN;
-import static com.kolesova_violetta.ltc.ui.fragments.GeneralPreferenceFragment.PREF_TRAILER_YEAR;
+import static com.kolesova_violetta.ltc.mock.Const.*;
 import static com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment.PREF_PHONE_1;
 
+/**
+ * Выбор условия корректности данных по preferenceKey
+ */
 public class ConditionalFactory {
     static ConditionalOfCloseDialogPref getConditionalByKey(String key) {
         switch (key) {

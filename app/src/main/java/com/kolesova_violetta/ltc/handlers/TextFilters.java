@@ -11,7 +11,6 @@ public class TextFilters {
         editText.setFilters(new InputFilter[] {
                 (charSequence, i, i1, spanned, i2, i3) -> {
                     if(charSequence == null || charSequence.equals("")) return null;
-                    //TODO: при Андроид 5.1 дублируются символы
                     String ONLY_LETTER_REGEX = "^[a-zA-Z]*$";
                     String source = charSequence.subSequence(i, i1).toString();
                     boolean onlyLetter = source.matches(ONLY_LETTER_REGEX);

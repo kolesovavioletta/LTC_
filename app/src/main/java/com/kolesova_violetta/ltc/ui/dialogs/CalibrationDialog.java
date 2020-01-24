@@ -15,7 +15,13 @@ import androidx.fragment.app.DialogFragment;
 import com.kolesova_violetta.ltc.PartOfCar;
 import com.kolesova_violetta.ltc.R;
 
-public class CalibrationDialogFragment extends DialogWithListenerForStandardButtons
+/**
+ * Для всех осей тягача и прицепа поочередно в диалоге выводятся массы,
+ * введенные при предыдущей калибровке, и изменяются пользователем.
+ * По окончании калибровки введенные данные могут быть получены {@link #getTractorWeights()}
+ * {@link #getTrailerWeights()}
+ */
+public class CalibrationDialog extends DialogWithListenerForStandardButtons
         implements DialogListenerForThreeStandardButtons {
     // Тягач
     private String TRACTOR_TITLE; // заголовок диалога
@@ -31,7 +37,7 @@ public class CalibrationDialogFragment extends DialogWithListenerForStandardButt
     private PartOfCar mCar; // текущая часть машины
     private EditText mWeightEditText; // поле для ввода масс в диалоговом окне
 
-    public CalibrationDialogFragment(String[] weightsTractor, String[] weightsTrailer) {
+    public CalibrationDialog(String[] weightsTractor, String[] weightsTrailer) {
         mWeightsTractor = weightsTractor;
         mWeightsTrailer = weightsTrailer;
         mAxesTractorCount = weightsTractor.length;
@@ -122,11 +128,11 @@ public class CalibrationDialogFragment extends DialogWithListenerForStandardButt
         super.onResume();
         AlertDialog alertDialog = (AlertDialog) getDialog();
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                .setOnClickListener(v -> onDialogPositiveClick(CalibrationDialogFragment.this));
+                .setOnClickListener(v -> onDialogPositiveClick(CalibrationDialog.this));
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                .setOnClickListener(v -> onDialogNegativeClick(CalibrationDialogFragment.this));
+                .setOnClickListener(v -> onDialogNegativeClick(CalibrationDialog.this));
         alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-                .setOnClickListener(v -> onDialogNeutralButton(CalibrationDialogFragment.this));
+                .setOnClickListener(v -> onDialogNeutralButton(CalibrationDialog.this));
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.kolesova_violetta.ltc.mock.Const.*;
 import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_AXLE_TRACTOR;
 import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_AXLE_TRAILER;
 import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_CALIBRATION_DATE;
