@@ -40,4 +40,11 @@ public class JsonTrailerResponse extends JsonResponse {
         acd[3] = getAcd4();
         return acd;
     }
+
+    public JsonTrailerResponse(String acd1, String acd2, String acd3, String acd4) {
+        this.acd1 = acd1;
+        this.acd2 = acd2;
+        this.acd3 = acd3;
+        this.acd4 = acd4;
+    }
 }

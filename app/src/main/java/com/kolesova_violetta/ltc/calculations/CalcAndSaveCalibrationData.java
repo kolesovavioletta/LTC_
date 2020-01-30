@@ -2,21 +2,14 @@ package com.kolesova_violetta.ltc.calculations;
 
 import android.util.Log;
 
-import androidx.arch.core.util.Function;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
+import androidx.lifecycle.Observer;
 
-import com.android.volley.VolleyError;
 import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.datastore.FailCallback;
+import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
-import com.kolesova_violetta.ltc.datastore.SuccessCb;
-import com.kolesova_violetta.ltc.handlers.LiveDataUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,9 +17,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.castErrorLiveData;
-import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.getAnswer;
-import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.getError;
 import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
 
 /**
@@ -43,55 +33,110 @@ import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
 public class CalcAndSaveCalibrationData {
     private static final int DELTA_AXLE_WEIGHT = 50; //прогрешность массы оси на весах и с устройства
     private static final int COUNT_TRY_SAVE = 20; // максимальное количество попыток сохранить коэффициенты
-
-    private enum Saved_State { // Состояния выполнения алгоритма
-        NONE, // не запущен (и не будет запущен)
-        WAIT, // ожидает запуска
-        PROGRESS,  // сохраняется
-        SUCCESS, // успешно сохранен
-        FAIL // ошибка при сохранении
-    }
-
     private Repository mDeviceRepo;
     private SharedPreferencesRepository mLocalRepo;
-
     // Запуск (повтор) работы класса с 1. Посчитать коэффициенты тягача/прицепа: mStartMLD.post...
-    private MutableLiveData<Void> mStartMLD = new MutableLiveData<>();
-
+    private CustomData<Void> mStartMLD = new CustomData<>();
     private Saved_State mHeadSavedState;
     // Переменные для запуска (повтор) работы класса с пункта 2. Сохранить коэффициенты тягача/прицепа на датчик
+
     //  - основного датчика
     private Response<float[], Exception> mCoefHead; // Ответ на сохранение коэффициентов
     // Сюда устанавливается ответ mCoefHead
-    private MutableLiveData<Response<float[], Exception>> mCoefHeadMLD = new MutableLiveData<>();
-    // И запускаются следующие шаги с помощью  MediatorLiveData mWaitForSaveAndCheckHead
-    private MediatorLiveData<Response<float[], Exception>> mWaitForSaveAndCheckHead = new MediatorLiveData<>();
+    private CustomData<float[]> mCoefHeadMLD = new CustomData<>();
+    // И запускаются следующие шаги с помощью mWaitForSaveAndCheckHead
+    private CustomData<float[]> mWaitForSaveAndCheckHead;
+
     // - дочернего датчика
     private Saved_State mTrailerSavedState;
-    private MutableLiveData<Response<float[], Exception>> mCoefTrailerMLD = new MutableLiveData<>();
+    private CustomData<float[]> mCoefTrailerMLD = new CustomData<>();
     private Response<float[], Exception> mCoefTrailer;
-    private MediatorLiveData<Response<float[], Exception>> mWaitForSaveAndCheckTrailer;
-    // Переменные для объединения дальнейших действий после расчета и сохранения коэф. при 2 датчиках
-    private MediatorLiveData<Response<Void, Exception>> mWaitFinishSaveTwoDevice = new MediatorLiveData<>();
-    private LiveData<Response<Void, Exception>> mSaveTractor;
-    private LiveData<Response<Void, Exception>> mSaveTrailer;
+    private CustomData<float[]> mWaitForSaveAndCheckTrailer;
 
+    // Переменные для объединения дальнейших действий после расчета и сохранения коэф. при 2 датчиках
+    private CustomData<Void> mWaitFinishSaveTwoDevice;
+    private CustomData<Void> mSaveTractor;
+    private CustomData<Void> mSaveTrailer;
     // Список номеров контуров для которых коэф. неверные по физическим причинам
     private boolean mErrorDeviceHead = false;
     private boolean mErrorDeviceTailer = false;
-
     private List<Circuit> mCircuitsHead; // контура, которые должны быть сохранены
     private List<Circuit> mCircuitsTrailer;
-
     private String mDriverName;
     private int steeringAxleWeight;
+
+    private CustomData.SwitchMapFun<float[], Void> saveTractorDataOnDevice = coef -> {
+        mHeadSavedState = Saved_State.PROGRESS;
+        if (coef.isSuccess()) {
+            return mDeviceRepo.setTractorCalibration_OnDevice(coef.getResult(), steeringAxleWeight, mDriverName);
+        } else {
+            CustomData<Void> cd = new CustomData<>();
+            cd.setValue(Response.error(coef.getError()));
+            return cd;
+        }
+    };
+
+    private CustomData.SwitchMapFun<float[], Void> saveTrailerDataOnDevice = coef -> {
+        mTrailerSavedState = Saved_State.PROGRESS;
+        if (coef.isSuccess()) {
+            return mDeviceRepo.setTrailerCalibration_OnDevice(coef.getResult(), mDriverName);
+        } else {
+            CustomData<Void> cd = new CustomData<>();
+            cd.setValue(Response.error(coef.getError()));
+            return cd;
+        }
+    };
+
+    private CustomData.SwitchMapFun<Void, JSONObject> getWeightsFromDevice =
+            val -> mDeviceRepo.getWeights_FromDevice();
+    /**
+     * Проверка соответствия масс. Если массы +-{@param DELTA_AXLE_WEIGHT} для каждой оси контура -
+     * передается положительный ответ. В случае ошибки повторяется цикл:
+     * - посчитать-сохранить-прочитать_массы-проверить при ошибке в этапе "посчитать"
+     * - сохранить-прочитать_массы-проверить при ошибке после этапа "посчитать".
+     * Если за {@param COUNT_TRY_SAVE} циклов не удалось успешно сохранить коэффициенты -
+     * передать ошибку и закончить работу.
+     *
+     * @param weightsResponse массы, полученые с датчика после смены коэффициентов.
+     * @return успех/неудача/неудача попытки N < {@param COUNT_TRY_SAVE}
+     */
+    private CustomData.MapFun<JSONObject, boolean[]> check =
+            new CustomData.MapFun<JSONObject, boolean[]>() {
+
+                private int mNumberTrySave = 1; // количество попыток сохранить коэффициенты
+
+                @Override
+                public Response<boolean[], Exception> apply(Response<JSONObject, Exception> val) {
+                    List<Circuit> unoin = new ArrayList<>(mCircuitsHead);
+                    unoin.addAll(mCircuitsTrailer);
+                    boolean correctSaved = checkSavedWeights(val.getResult(), unoin);
+                    if (correctSaved) {
+                        onDestroy();
+                        return Response.success(new boolean[]{mErrorDeviceHead, mErrorDeviceTailer});
+                    } else if (mNumberTrySave < COUNT_TRY_SAVE) {
+                        if (mCoefHead.isSuccess() && mCoefTrailer.isSuccess()) {
+                            mCoefHeadMLD.setValue(mCoefHead);
+                            mCoefTrailerMLD.setValue(mCoefTrailer);
+
+                        } else {
+                            mStartMLD.setValue(null);
+                        }
+                        mNumberTrySave++;
+                        return Response.error(null);
+                    } else {
+                        onDestroy();
+                        return Response.error(
+                                new IndexOutOfBoundsException("the limit of attempts to write data to the device has been exhausted"));
+                    }
+                }
+            };
 
     public CalcAndSaveCalibrationData(Repository mDeviceRepo, SharedPreferencesRepository mLocalRepo) {
         this.mDeviceRepo = mDeviceRepo;
         this.mLocalRepo = mLocalRepo;
     }
 
-    public LiveData<Response<boolean[], Throwable>> start() {
+    public CustomData<boolean[]> start() {
         mHeadSavedState = Saved_State.WAIT;
         mTrailerSavedState = Saved_State.NONE;
 
@@ -105,18 +150,13 @@ public class CalcAndSaveCalibrationData {
         mCircuitsHead = getCircuitsHead(modeInstallation);
         // Сохранение данных на один или два датчика
         boolean trailerNeedSave = modeInstallation == 2 && mLocalRepo.isExistTrailer();
-        if(trailerNeedSave) {
+        if (trailerNeedSave) {
             mTrailerSavedState = Saved_State.WAIT;
         }
-        LiveData<Response<Void, Exception>> saved = Transformations.switchMap(mStartMLD,
-                x -> trailerNeedSave ?
-                        startSaveForTwoDevice() :
-                        startSaveHead());
-
-        // Получуение масс, основанных на новых коэффициентах
-        LiveData<Response<JSONObject, Exception>> weightsResponse = getWeightsFromDevice(saved);
-        // Проверка соответствия полученных с датчика масс с введенными пользователем
-        return check(weightsResponse);
+        return mStartMLD
+                .switchMap(input -> trailerNeedSave ? startSaveForTwoDevice() : startSaveHead())
+                .switchMap(getWeightsFromDevice) // Получуение масс, основанных на новых коэффициентах
+                .map(check); // Проверка соответствия полученных с датчика масс с введенными пользователем
     }
 
     private List<Circuit> getCircuitsHead(int modeInstallation) {
@@ -137,19 +177,18 @@ public class CalcAndSaveCalibrationData {
         return circuits;
     }
 
-    private LiveData<Response<Void, Exception>> startSaveHead() {
+    private CustomData<Void> startSaveHead() {
         // Расчет коэффициентов для калибровки датчика
         return calcAndSaveHead(mCircuitsHead);
     }
 
-    private LiveData<Response<Void, Exception>> startSaveForTwoDevice() {
+    private CustomData<Void> startSaveForTwoDevice() {
         // Расчет коэффициентов для калибровки датчика тягача
         mSaveTractor = calcAndSaveHead(mCircuitsHead);
 
         // Расчет коэффициентов для калибровки датчика прицепа
         mCircuitsTrailer = mLocalRepo.getCircuitsTrailer();
         mSaveTrailer = calcAndSaveTrailer(mCircuitsTrailer);
-
         // Подождать завершения сохранения для тягача и прицепа
         mWaitFinishSaveTwoDevice = waitFinishSave(mSaveTractor, mSaveTrailer);
         return mWaitFinishSaveTwoDevice;
@@ -158,43 +197,41 @@ public class CalcAndSaveCalibrationData {
     /**
      * Расчет коэффициентов для основного датчика и сохранение их на него
      */
-    private LiveData<Response<Void, Exception>> calcAndSaveHead(List<Circuit> circuits) {
+    private CustomData<Void> calcAndSaveHead(List<Circuit> circuits) {
         // Расчет коэффициентов
         CalcHeadCalibrCoefExecutor calcExec = new CalcHeadCalibrCoefExecutor(mDeviceRepo);
-        LiveData<Response<float[], Exception>> calcResponse = calcExec.runCalc(circuits);
-        // Сохранение ответа с массивом коэффициентов в mCoefHead
-        LiveData<Response<float[], Exception>> calcArr = Transformations.map(calcResponse, input -> {
-            mCoefHead = input;
-            if (input.isSuccess()) {
-                float[] coef = getAnswer(input);
-                mErrorDeviceHead = coefArrWithError(coef);
-            }
-            return input;
-        });
+        CustomData<float[]> calcArr = calcExec.runCalc(circuits)
+                .map(coef -> {
+                    mCoefHead = coef;
+                    if (coef.isSuccess()) {
+                        mErrorDeviceHead = coefArrWithError(coef.getResult());
+                    }
+                    return mCoefHead;
+                });
         // Объединение двух веток данных: данные при первой попытке, данные следующих попыток
-        mWaitForSaveAndCheckHead = combineTwoLiveData(calcArr, mCoefHeadMLD);
-        return saveTractorDataOnDevice(mWaitForSaveAndCheckHead);
+        mWaitForSaveAndCheckHead = combineAfterCalc(calcArr, mCoefHeadMLD);
+        return mWaitForSaveAndCheckHead
+                .switchMap(saveTractorDataOnDevice);
     }
 
     /**
      * Расчет коэффициентов для дочернего датчика и сохранение их на него
      */
-    private LiveData<Response<Void, Exception>> calcAndSaveTrailer(List<Circuit> circuits) {
+    private CustomData<Void> calcAndSaveTrailer(List<Circuit> circuits) {
         // Расчет коэффициентов
         CalcTrailerCalibrCoefExecutor calcExec = new CalcTrailerCalibrCoefExecutor(mDeviceRepo);
-        LiveData<Response<float[], Exception>> calcResponse = calcExec.runCalc(circuits);
-        // Сохранение ответа с массивом коэффициентов в mCoefTrailer
-        LiveData<Response<float[], Exception>> calcArr = Transformations.map(calcResponse, input -> {
-            mCoefTrailer = input;
-            if (input.isSuccess()) {
-                float[] coef = getAnswer(input);
-                mErrorDeviceTailer = coefArrWithError(coef);
-            }
-            return input;
-        });
+        CustomData<float[]> calcArr = calcExec.runCalc(circuits)
+                .map(coef -> {
+                    if (coef.isSuccess()) {
+                        mErrorDeviceTailer = coefArrWithError(coef.getResult());
+                    }
+                    mCoefTrailer = coef;
+                    return mCoefTrailer;
+                });
         // Объединение двух веток данных: данные при первой попытки, данные следующих попыток
-        mWaitForSaveAndCheckTrailer = combineTwoLiveData(calcArr, mCoefTrailerMLD);
-        return saveTrailerDataOnDevice(mWaitForSaveAndCheckTrailer);
+        mWaitForSaveAndCheckTrailer = combineAfterCalc(calcArr, mCoefTrailerMLD);
+        return mWaitForSaveAndCheckTrailer
+                .switchMap(saveTrailerDataOnDevice);
     }
 
     private boolean coefArrWithError(float[] coef) {
@@ -206,34 +243,6 @@ public class CalcAndSaveCalibrationData {
         return false;
     }
 
-    private LiveData<Response<Void, Exception>> saveTractorDataOnDevice(
-            LiveData<Response<float[], Exception>> coefLiveData) {
-        return Transformations.switchMap(coefLiveData, coefResp -> {
-            mHeadSavedState = Saved_State.PROGRESS;
-            if (coefResp.isSuccess()) {
-                float[] coef = getAnswer(coefResp);
-                LiveData<Response<Void, VolleyError>> save = mDeviceRepo.setTractorCalibration_OnDevice(coef, steeringAxleWeight, mDriverName);
-                return Transformations.map(save, LiveDataUtils::upCastLiveData);
-            } else {
-                return castErrorLiveData(coefResp);
-            }
-        });
-    }
-
-    private LiveData<Response<Void, Exception>> saveTrailerDataOnDevice(
-            LiveData<Response<float[], Exception>> coefLiveData) {
-        return Transformations.switchMap(coefLiveData, coefResp -> {
-            mTrailerSavedState = Saved_State.PROGRESS;
-            if (coefResp.isSuccess()) {
-                float[] coef = getAnswer(coefResp);
-                LiveData<Response<Void, VolleyError>> save = mDeviceRepo.setTrailerCalibration_OnDevice(coef, mDriverName);
-                return Transformations.map(save, LiveDataUtils::upCastLiveData);
-            } else {
-                return castErrorLiveData(coefResp);
-            }
-        });
-    }
-
     private boolean allRequestsFinishSuccess() {
         boolean headSuccess = mHeadSavedState.equals(Saved_State.SUCCESS);
         boolean trailerSuccessOrNotRun =
@@ -242,38 +251,20 @@ public class CalcAndSaveCalibrationData {
         return (headSuccess && trailerSuccessOrNotRun);
     }
 
-    private LiveData<Response<JSONObject, Exception>> getWeightsFromDevice(
-            LiveData<Response<Void, Exception>> onSaved) {
-        return Transformations.switchMap(onSaved, input -> {
-            if (input.isSuccess()) {
-                LiveData<Response<JSONObject, VolleyError>> weights = mDeviceRepo.getWeights_FromDevice();
-                return Transformations.map(weights, LiveDataUtils::upCastLiveData);
-            } else {
-                return castErrorLiveData(input);
-            }
-        });
-    }
-
     /**
      * Объединение двух источников данных.
+     *
      * @param liveData1 отпишется после первой передачи значения
      * @param liveData2 необходимо отписать!
      */
-    private <T> MediatorLiveData<Response<T, Exception>> combineTwoLiveData(
-            LiveData<Response<T, Exception>> liveData1, LiveData<Response<T, Exception>> liveData2) {
-        MediatorLiveData<Response<T, Exception>> liveDataMerger = new MediatorLiveData<>();
-        liveDataMerger.addSource(liveData1, s -> {
-            liveDataMerger.setValue(s);
+    private <T> CustomData<T> combineAfterCalc(CustomData<T> liveData1, CustomData<T> liveData2) {
+        CustomData<T> liveDataMerger = new CustomData<>();
+        Observer<Response<T, Exception>> obs1 = liveDataMerger::setValue;
+        Observer<Response<T, Exception>> obs2 = value -> {
+            liveDataMerger.setValue(value);
             liveDataMerger.removeSource(liveData1);
-        });
-        liveDataMerger.addSource(liveData2, s -> {
-            if(BuildConfig.DEBUG) {
-                Log.d("!@#$", "Te:combineTwoLiveData:276: ");
-            }
-            liveDataMerger.setValue(s);
-        });
-
-        return liveDataMerger;
+        };
+        return liveData1.combine(liveData2, obs1, obs2, liveDataMerger);
     }
 
     /**
@@ -281,74 +272,23 @@ public class CalcAndSaveCalibrationData {
      * Передать знаечние, если оба запроса завершны или текущий завершился с ошибкой.
      * Ошибка второго запроса НЕ будет обработана.
      */
-    private MediatorLiveData<Response<Void, Exception>> waitFinishSave(
-            LiveData<Response<Void, Exception>> saveTractor,
-            LiveData<Response<Void, Exception>> saveTrailer) {
-        MediatorLiveData<Response<Void, Exception>> mediatorLiveData = new MediatorLiveData<>();
-        mediatorLiveData.addSource(saveTractor, response -> {
+    private CustomData<Void> waitFinishSave(CustomData<Void> saveTractor, CustomData<Void> saveTrailer) {
+        CustomData<Void> mediatorLiveData = new CustomData<>();
+        Observer<Response<Void, Exception>> trac = response -> {
             mHeadSavedState = response.isSuccess() ? Saved_State.SUCCESS : Saved_State.FAIL;
             boolean curFail = mHeadSavedState.equals(Saved_State.FAIL);
             if (allRequestsFinishSuccess() || curFail) {
                 mediatorLiveData.setValue(response);
             }
-        });
-        mediatorLiveData.addSource(saveTrailer, response -> {
+        };
+        Observer<Response<Void, Exception>> trail = response -> {
             mTrailerSavedState = response.isSuccess() ? Saved_State.SUCCESS : Saved_State.FAIL;
             boolean curFail = mTrailerSavedState.equals(Saved_State.FAIL);
             if (allRequestsFinishSuccess() || curFail) {
                 mediatorLiveData.setValue(response);
             }
-        });
-        return mediatorLiveData;
-    }
-
-    /**
-     * Проверка соответствия масс. Если массы +-{@param DELTA_AXLE_WEIGHT} для каждой оси контура -
-     * передается положительный ответ. В случае ошибки повторяется цикл:
-     *  - посчитать-сохранить-прочитать_массы-проверить при ошибке в этапе "посчитать"
-     *  - сохранить-прочитать_массы-проверить при ошибке после этапа "посчитать".
-     *  Если за {@param COUNT_TRY_SAVE} циклов не удалось успешно сохранить коэффициенты -
-     *  передать ошибку и закончить работу.
-     * @param weightsResponse массы, полученые с датчика после смены коэффициентов.
-     * @return успех/неудача/неудача попытки N < {@param COUNT_TRY_SAVE}
-     */
-    private LiveData<Response<boolean[], Throwable>> check(
-            LiveData<Response<JSONObject, Exception>> weightsResponse) {
-        return Transformations.map(weightsResponse,
-                new Function<Response<JSONObject, Exception>, Response<boolean[], Throwable>>() {
-            private int mNumberTrySave = 1; // количество попыток сохранить коэффициенты
-            @Override
-            public Response<boolean[], Throwable> apply(Response<JSONObject, Exception> input) {
-                if (input.isSuccess()) {
-                    List<Circuit> unoin = new ArrayList<>(mCircuitsHead);
-                    unoin.addAll(mCircuitsTrailer);
-                    boolean correctSaved = checkSavedWeights(getAnswer(input), unoin);
-                    if (correctSaved) {
-                        onDestroy();
-                        return new SuccessCb<>(new boolean[]{mErrorDeviceHead, mErrorDeviceTailer});
-                    } else if (mNumberTrySave < COUNT_TRY_SAVE) {
-                        if(BuildConfig.DEBUG) {
-                            Log.d("!@#$", "Te:check:365: TRY " + mNumberTrySave);
-                        }
-                        if (mCoefHead.isSuccess() && mCoefTrailer.isSuccess()) {
-                            mCoefHeadMLD.setValue(mCoefHead);
-                            mCoefTrailerMLD.setValue(mCoefTrailer);
-
-                        } else {
-                            mStartMLD.setValue(null);
-                        }
-                        mNumberTrySave++;
-                        return new FailCallback<>();
-                    } else {
-                        onDestroy();
-                        return new FailCallback<>(
-                                new IndexOutOfBoundsException("the limit of attempts to write data to the device has been exhausted"));
-                    }
-                } else {
-                    return new FailCallback<>(getError(input));
-                }
-            }
-        });
+        };
+        return saveTractor.combine(saveTrailer, trac, trail, mediatorLiveData);
     }
 
     private boolean checkSavedWeights(JSONObject deviceWeightsJson, List<Circuit> circuits) {
@@ -387,5 +327,13 @@ public class CalcAndSaveCalibrationData {
         mWaitForSaveAndCheckTrailer.removeSource(mCoefTrailerMLD);
         mWaitFinishSaveTwoDevice.removeSource(mSaveTractor);
         mWaitFinishSaveTwoDevice.removeSource(mSaveTrailer);
+    }
+
+    private enum Saved_State { // Состояния выполнения алгоритма
+        NONE, // не запущен (и не будет запущен)
+        WAIT, // ожидает запуска
+        PROGRESS,  // сохраняется
+        SUCCESS, // успешно сохранен
+        FAIL // ошибка при сохранении
     }
 }

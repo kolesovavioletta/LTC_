@@ -6,11 +6,10 @@ import androidx.lifecycle.Observer;
 
 import com.android.volley.VolleyError;
 import com.kolesova_violetta.ltc.calculations.CalcAndSaveCalibrationData;
-import com.kolesova_violetta.ltc.datastore.FailCallback;
+import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
-import com.kolesova_violetta.ltc.datastore.SuccessCb;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -36,7 +34,7 @@ public class CalibrationViewModelTest {
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
     @Mock
-    private Observer<Response<Void, Throwable>> observerVoid;
+    private Observer<Response<Void, Exception>> observerVoid;
     @Mock
     private Observer<String> observerStr;
     @Mock
@@ -51,6 +49,18 @@ public class CalibrationViewModelTest {
                 new CalibrationViewModel(
                         mock(Repository.class), mock(SharedPreferencesRepository.class)));
         viewModel.getSensorErrorLiveData().observeForever(observerStr);
+        doReturn(new String[]{"0"})
+                .when(viewModel)
+                .getWeightsTractor();
+        doReturn(new String[]{"0"})
+                .when(viewModel)
+                .getWeightsTrailer();
+        doReturn("Name")
+                .when(viewModel)
+                .getDriverNameAfterSuccessCalibration();
+        doReturn("Time")
+                .when(viewModel)
+                .getDatetimeAfterSuccessCalibration();
         doReturn(calc)
                 .when(viewModel)
                 .makeCalcAndSaveCalibr(any(Repository.class), any(SharedPreferencesRepository.class));
@@ -63,57 +73,50 @@ public class CalibrationViewModelTest {
         viewModel = null;
     }
 
-    private void setCalcResponse(Response<boolean[], Throwable> response) {
-        MutableLiveData<Response<boolean[], Throwable>> ld = new MutableLiveData<>();
-        ld.setValue(response);
-        when(calc.start()).thenReturn(ld);
+    private void setCalcResponse(CustomData<boolean[]> response) {
+        when(calc.start()).thenReturn(response);
 
         viewModel.onEndInputWeights(any(), any()).observeForever(observerVoid);
     }
 
     @Test
     public void afterSuccessSave_DeviceCorrect_Correct() {
-        SuccessCb<boolean[], Throwable> response = new SuccessCb<>(new boolean[]{false, false});
-        setCalcResponse(response);
+        setCalcResponse(CustomData.getInstance(new boolean[]{false, false}));
 
-        verify(observerVoid).onChanged((Response<Void, Throwable>) SuccessCb.EMPTY);
+        verify(observerVoid).onChanged(Response.success(null));
     }
 
     @Test
     public void afterSuccessSave_TwiceDeviceInvalid_Correct() {
-        SuccessCb<boolean[], Throwable> response = new SuccessCb<>(new boolean[]{false, true});
-        setCalcResponse(response);
+        setCalcResponse(CustomData.getInstance(new boolean[]{false, true}));
 
-        verify(observerVoid).onChanged((Response<Void, Throwable>) SuccessCb.EMPTY);
+        verify(observerVoid).onChanged(Response.success(null));
         verify(observerStr).onChanged("2");
     }
 
     @Test
     public void afterSuccessSave_BothDeviceInvalid_Correct() {
-        SuccessCb<boolean[], Throwable> response = new SuccessCb<>(new boolean[]{true, true});
-        setCalcResponse(response);
+        setCalcResponse(CustomData.getInstance(new boolean[]{true, true}));
 
-        verify(observerVoid).onChanged((Response<Void, Throwable>) SuccessCb.EMPTY);
+        verify(observerVoid).onChanged(Response.success(null));
         verify(observerStr).onChanged("1, 2");
     }
 
     @Test
     public void afterFailSave_Correct() {
         VolleyError error = new VolleyError("something");
-        FailCallback<boolean[], Throwable> response = new FailCallback<>(error);
-        setCalcResponse(response);
+        setCalcResponse(CustomData.getInstance(error));
 
-        Response<Void, Throwable> expected = new FailCallback<>(error);
+        Response<Void, Exception> expected = Response.error(error);
 
         verify(observerVoid).onChanged(expected);
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void afterSuccessSave_NullArrAboutDevice_Incorrect() {
-        SuccessCb<boolean[], Throwable> response = new SuccessCb<>(null);
-        setCalcResponse(response);
+        setCalcResponse(CustomData.getInstance(null));
 
-        verify(observerVoid).onChanged((Response<Void, Throwable>) SuccessCb.EMPTY);
+        verify(observerVoid).onChanged(Response.success(null));
         verify(observerStr).onChanged("");
     }
 

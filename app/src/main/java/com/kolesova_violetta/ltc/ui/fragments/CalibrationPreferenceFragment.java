@@ -18,8 +18,8 @@ import androidx.preference.SwitchPreference;
 
 import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.R;
+import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.mock.SmsSender;
-import com.kolesova_violetta.ltc.datastore.FailCallback;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
@@ -162,20 +162,19 @@ public class CalibrationPreferenceFragment extends CustomPreferenceFragment
     private void onFinishCalibration(DialogFragment dialog) {
         ((ShowingProgressDialogFromFragment) getActivity()).showProgressDialog(true);
         CalibrationDialog calibrDialog = (CalibrationDialog) dialog;
-        LiveData<Response<Void, Throwable>> saveCoefficientLD = mViewModel.onEndInputWeights(
+        CustomData<Void> saveCoefficientLD = mViewModel.onEndInputWeights(
                 calibrDialog.getTractorWeights(), calibrDialog.getTrailerWeights()
         );
         saveCoefficientLD.observe(this, this::onFinishSaveCoefficients);
     }
 
-    private void onFinishSaveCoefficients(Response<Void, Throwable> response) {
+    private void onFinishSaveCoefficients(Response<Void, Exception> response) {
         if (response.isSuccess()) {
             refreshScreen(getPreferenceScreen());
             createResultDialog(true);
             sendSmsAfterCalibration();
         } else {
-            FailCallback<Void, Throwable> failCallback = (FailCallback<Void, Throwable>) response;
-            if (failCallback.getError() != null) {
+            if (response.getError() != null) {
                 createResultDialog(false);
             }
         }

@@ -69,4 +69,14 @@ public class JsonHeadResponse extends JsonResponse {
         acd[3] = getHeadAcd4();
         return acd;
     }
+
+    public JsonHeadResponse() {
+    }
+
+    public void setAllHeadAcd(String acd0, String acd1, String acd2, String acd3) {
+        headAcd1 = acd0;
+        headAcd2 = acd1;
+        headAcd3 = acd2;
+        headAcd4 = acd3;
+    }
 }

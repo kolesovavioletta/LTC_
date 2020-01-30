@@ -6,11 +6,12 @@ import androidx.lifecycle.Observer;
 
 import com.android.volley.VolleyError;
 import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.datastore.FailCallback;
+import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
-import com.kolesova_violetta.ltc.datastore.SuccessCb;
+import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonHeadResponse;
+import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonTrailerResponse;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +28,6 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.createLiveData;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,14 +50,14 @@ public class CalcAndSaveCalibrationDataTest {
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
     @Mock
-    private Observer<Response<boolean[], Throwable>> observer;
+    private Observer<Response<boolean[], Exception>> observer;
     @Mock
     private Repository rRepo;
     @Mock
     private SharedPreferencesRepository lRepo;
 
     private CalcAndSaveCalibrationData calc;
-    private LiveData<Response<boolean[], Throwable>> end;
+    private CustomData<boolean[]> end;
 
     @Before
     public void setUp() throws Exception {
@@ -66,14 +66,14 @@ public class CalcAndSaveCalibrationDataTest {
         when(lRepo.getDriverName()).thenReturn("DriverName");
         when(lRepo.getSteeringAxleWeight()).thenReturn(150);
 
-        when(rRepo.getHeadConfig_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(
-                        "{\"Head-k1\":5000,\"Head-k2\":10000,\"Head-k3\":15000,\"Head-k4\":20000}")));
+        JsonHeadResponse jsonHeadResponse = new JsonHeadResponse();
+        jsonHeadResponse.setAllHeadAcd("5000", "10000", "15000", "20000");
+        CustomData<JsonHeadResponse> headResponseCustomData = CustomData.getInstance(jsonHeadResponse);
+        when(rRepo.getHeadConfig_FromDevice()).thenReturn(headResponseCustomData);
 
-        when(rRepo.getTrailerConfig_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(
-                        "{\"Trailer-k1\":5000,\"Trailer-k2\":15000,\"Trailer-k3\":25000,\"Trailer-k4\":35000}"
-                )));
+        JsonTrailerResponse jsonTrailerResponse = new JsonTrailerResponse("5000", "15000", "25000", "35000");
+        CustomData<JsonTrailerResponse> trailerResponseCustomData = CustomData.getInstance(jsonTrailerResponse);
+        when(rRepo.getTrailerConfig_FromDevice()).thenReturn(trailerResponseCustomData);
     }
 
     @After
@@ -95,11 +95,11 @@ public class CalcAndSaveCalibrationDataTest {
             e.printStackTrace();
         }
         when(rRepo.getWeights_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(weights)));
+                .thenReturn( CustomData.getInstance(weights) );
 
         end = calc.start();
         end.observeForever(observer);
-        verify(observer).onChanged(new SuccessCb<>(new boolean[]{false, false}));
+        verify(observer).onChanged(Response.success(new boolean[]{false, false}));
     }
 
     @Test
@@ -114,11 +114,11 @@ public class CalcAndSaveCalibrationDataTest {
             e.printStackTrace();
         }
         when(rRepo.getWeights_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(weights)));
+                .thenReturn( CustomData.getInstance(weights) );
 
         end = calc.start();
         end.observeForever(observer);
-        verify(observer).onChanged(new SuccessCb<>(new boolean[]{false, false}));
+        verify(observer).onChanged(Response.success(new boolean[]{false, false}));
     }
 
     @Test
@@ -133,12 +133,12 @@ public class CalcAndSaveCalibrationDataTest {
             e.printStackTrace();
         }
         when(rRepo.getWeights_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(weights)));
+                .thenReturn( CustomData.getInstance(weights) );
 
         end = calc.start();
         end.observeForever(observer);
         verify(observer).onChanged(
-                new FailCallback<>(new IndexOutOfBoundsException(
+                Response.error(new IndexOutOfBoundsException(
                         "the limit of attempts to write data to the device has been exhausted")));
     }
 
@@ -148,28 +148,28 @@ public class CalcAndSaveCalibrationDataTest {
         //--- тягач
         List<Circuit> circuitH = new ArrayList<>();
         circuitH.add(new Circuit(2, "2", "A1", 300));
-        installHead(circuitH, (SuccessCb<Void, VolleyError>) SuccessCb.EMPTY);
+        installHead(circuitH, CustomData.getInstance(null));
         //--- прицеп
         when(lRepo.isExistTrailer()).thenReturn(true);
 
         List<Circuit> circuitT = new ArrayList<>();
         circuitT.add(new Circuit(3, "2", "B1", 800));
 
-        installTrailer(circuitT, (SuccessCb<Void, VolleyError>) SuccessCb.EMPTY);
+        installTrailer(circuitT, CustomData.getInstance(null));
     }
 
-    private void installHead(List<Circuit> circuits, Response<Void,VolleyError> onSave) {
+    private void installHead(List<Circuit> circuits, CustomData<Void> onSave) {
         when(lRepo.getCircuitsTractor()).thenReturn(circuits);
 
         when(rRepo.setTractorCalibration_OnDevice(any(), anyInt(), anyString()))
-                .thenReturn(createLiveData(onSave));
+                .thenReturn(onSave);
     }
 
-    private void installTrailer(List<Circuit> circuits, Response<Void,VolleyError> onSave) {
+    private void installTrailer(List<Circuit> circuits, CustomData<Void> onSave) {
         when(lRepo.getCircuitsTrailer()).thenReturn(circuits);
 
         when(rRepo.setTrailerCalibration_OnDevice(any(), anyString()))
-                .thenReturn(createLiveData(onSave));
+                .thenReturn(onSave);
     }
 
     @Test
@@ -188,11 +188,11 @@ public class CalcAndSaveCalibrationDataTest {
             e.printStackTrace();
         }
         when(rRepo.getWeights_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(weights)));
+                .thenReturn( CustomData.getInstance(weights) );
 
         end = calc.start();
         end.observeForever(observer);
-        verify(observer).onChanged(new SuccessCb<>(new boolean[]{false, false}));
+        verify(observer).onChanged(Response.success(new boolean[]{false, false}));
     }
 
     // тип установки - 2 блока. Тягач: 1 двуст. + 1 пара одностор.; Прицеп: 1 пара одностор. + 1 двуст.
@@ -202,13 +202,13 @@ public class CalcAndSaveCalibrationDataTest {
         List<Circuit> circuitH = new ArrayList<>();
         circuitH.add(new Circuit(2, "2", "A1", 300));
         circuitH.add(new Circuit(1, "1", "A3","A4", 600));
-        installHead(circuitH, (SuccessCb<Void, VolleyError>) SuccessCb.EMPTY);
+        installHead(circuitH, CustomData.getInstance(null));
         //--- прицеп
         when(lRepo.isExistTrailer()).thenReturn(true);
 
         List<Circuit> circuitT = new ArrayList<>();
         circuitT.add(new Circuit(2, "1", "B1","B3", 200));
         circuitT.add(new Circuit(1, "2", "B2", 600));
-        installTrailer(circuitT, (SuccessCb<Void, VolleyError>) SuccessCb.EMPTY);
+        installTrailer(circuitT, CustomData.getInstance(null));
     }
 }

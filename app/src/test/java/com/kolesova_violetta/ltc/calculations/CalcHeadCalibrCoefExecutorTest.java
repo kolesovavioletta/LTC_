@@ -4,12 +4,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.Observer;
 
 import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.calculations.CalcHeadCalibrCoefExecutor;
-import com.kolesova_violetta.ltc.calculations.CalcTrailerCalibrCoefExecutor;
-import com.kolesova_violetta.ltc.datastore.FailCallback;
+import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
-import com.kolesova_violetta.ltc.datastore.SuccessCb;
+import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonHeadResponse;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kolesova_violetta.ltc.handlers.LiveDataUtils.createLiveData;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,43 +55,33 @@ public class CalcHeadCalibrCoefExecutorTest {
 
     @Test
     public void calc_Correct() {
-        when(rRepo.getHeadConfig_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(
-                        "{\"Head-k1\":5000,\"Head-k2\":10000,\"Head-k3\":15000,\"Head-k4\":20000}")));
+        JsonHeadResponse jsonHeadResponse = new JsonHeadResponse();
+        jsonHeadResponse.setAllHeadAcd("5000", "10000", "15000", "20000");
+        CustomData<JsonHeadResponse> headResponseCustomData = CustomData.getInstance(jsonHeadResponse);
+        when(rRepo.getHeadConfig_FromDevice()).thenReturn(headResponseCustomData);
 
         calc.runCalc(circuit)
                 .observeForever(observer);
-        verify(observer).onChanged(new SuccessCb<>(new float[]{0.1293f, 0.0819f, 0.0568f, 0.0404f}));
-    }
-
-    @Test
-    public void calc_JsonConvert_Correct() {
-        when(rRepo.getHeadConfig_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>(
-                        "{\"Error\":5000,\"Head-k2\":10000,\"Head-k3\":15000,\"Head-k4\":20000}")));
-
-        calc.runCalc(circuit)
-                .observeForever(observer);
-        verify(observer).onChanged(new SuccessCb<>(new float[]{0, 0.0819f, 0.0568f, 0.0404f}));
+        verify(observer).onChanged(Response.success(new float[]{0.1293f, 0.0819f, 0.0568f, 0.0404f}));
     }
 
     @Test
     public void calc_JsonEmpty_Incorrect() {
         when(rRepo.getHeadConfig_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>("")));
+                .thenReturn(CustomData.getInstance(new JsonHeadResponse()));
 
         calc.runCalc(circuit)
                 .observeForever(observer);
-        verify(observer).onChanged(new FailCallback<>(new NullPointerException()));
+        verify(observer).onChanged(Response.success(new float[]{0, 0, 0, 0}));
     }
 
     @Test
     public void calc_JsonNull_Incorrect() {
         when(rRepo.getHeadConfig_FromDevice())
-                .thenReturn(createLiveData(new SuccessCb<>()));
+                .thenReturn(CustomData.getInstance(null));
 
         calc.runCalc(circuit)
                 .observeForever(observer);
-        verify(observer).onChanged(new FailCallback<>(new NullPointerException()));
+        verify(observer).onChanged(Response.error(new NullPointerException()));
     }
 }

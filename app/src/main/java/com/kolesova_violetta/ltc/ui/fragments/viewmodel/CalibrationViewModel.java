@@ -13,14 +13,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.Circuit;
+import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.mock.SmsSenderAfterCalibration;
 import com.kolesova_violetta.ltc.mock.TractorCache;
 import com.kolesova_violetta.ltc.calculations.CalcAndSaveCalibrationData;
-import com.kolesova_violetta.ltc.datastore.FailCallback;
 import com.kolesova_violetta.ltc.datastore.Repository;
 import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
-import com.kolesova_violetta.ltc.datastore.SuccessCb;
 import com.kolesova_violetta.ltc.datastore.device_as_server.DeviceQueries;
 
 import java.util.Arrays;
@@ -52,27 +51,20 @@ public class CalibrationViewModel extends ViewModel {
     /**
      * Расчитать и сохранить коэффициенты для калибровки датчиков
      */
-    public LiveData<Response<Void, Throwable>> onEndInputWeights(String[] weightsTractor,
-                                                                 String[] weightsTrailer) {
+    public CustomData<Void> onEndInputWeights(String[] weightsTractor, String[] weightsTrailer) {
         // Сохранение локально
         String driverName = getDriverNameAfterSuccessCalibration();
         String dateTime = getDatetimeAfterSuccessCalibration();
         mLocalRepo.saveCalibration(weightsTractor, weightsTrailer, driverName, dateTime);
         // Сохранение на датчик
-        LiveData<Response<boolean[], Throwable>> onSave =
-                makeCalcAndSaveCalibr(mRepo, mLocalRepo).start();
-        return Transformations.map(onSave, sensorErrors -> {
-            if (sensorErrors.isSuccess()) {
-                boolean[] arr = ((SuccessCb<boolean[], Throwable>) sensorErrors).getResponse();
-                String errSensor = createErrSensorString(arr);
-                if (!errSensor.isEmpty()) {
-                    mSensorErrorLiveData.postValue(errSensor);
-                }
-                return (Response<Void, Throwable>) SuccessCb.EMPTY;
-            } else {
-                return new FailCallback<>(((FailCallback<boolean[], Throwable>) sensorErrors).getError());
-            }
-        });
+        return makeCalcAndSaveCalibr(mRepo, mLocalRepo).start()
+                .mape(arr -> {
+                    String errSensor = createErrSensorString(arr);
+                    if (!errSensor.isEmpty()) {
+                        mSensorErrorLiveData.postValue(errSensor);
+                    }
+                    return Response.success(null);
+                });
     }
 
     CalcAndSaveCalibrationData makeCalcAndSaveCalibr(Repository repo, SharedPreferencesRepository shRepo) {

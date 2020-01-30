@@ -4,7 +4,6 @@ import android.content.Context;
 
 import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -13,6 +12,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.kolesova_violetta.ltc.datastore.device_as_server.DeviceQueries;
 import com.kolesova_violetta.ltc.datastore.device_as_server.DeviceServer;
+import com.kolesova_violetta.ltc.datastore.device_as_server.response.GsonRequest;
+import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonHeadResponse;
+import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonTrailerResponse;
 
 import org.json.JSONObject;
 
@@ -31,83 +33,56 @@ public class Repository {
         mQueue = queue;
     }
 
-    public LiveData<Response<Void, VolleyError>> setRequest(String url) {
-        final MutableLiveData<Response<Void, VolleyError>> liveData =
-                new MutableLiveData<>();
-        StringRequest request = new StringRequest(Request.Method.GET, url,
-                success -> {
-                    liveData.setValue((Response<Void, VolleyError>) SuccessCb.EMPTY);
-                },
-                error -> {
-                    final FailCallback<Void, VolleyError> a = new FailCallback<>(error);
-                    liveData.setValue(a);
-                });
+    public CustomData<Void> setRequest(String url) {
+        final CustomData<String> liveData = new CustomData<>();
+        StringRequest request = new StringRequest(Request.Method.GET, url, liveData, liveData);
         mQueue.add(request);
-        return liveData;
+        return liveData.mape(val -> Response.success(null));
     }
 
-    private LiveData<Response<String, VolleyError>> getRequest(String url) {
-        final MutableLiveData<Response<String, VolleyError>> liveData =
-                new MutableLiveData<>();
-        StringRequest request = new StringRequest(Request.Method.GET, url,
-                success -> {
-                    final SuccessCb<String, VolleyError> a = new SuccessCb<>(success);
-                    liveData.setValue(a);
-                },
-                error -> {
-                    error.printStackTrace();
-                    final FailCallback<String, VolleyError> a = new FailCallback<>(error);
-                    liveData.setValue(a);
-                });
-        mQueue.add(request);
-        return liveData;
-    }
-
-    private LiveData<Response<JSONObject, VolleyError>> getRequestJson(String url) {
-        final MutableLiveData<Response<JSONObject, VolleyError>> liveData =
-                new MutableLiveData<>();
+    private CustomData<JSONObject> getRequestJson(String url) {
+        final CustomData<JSONObject> liveData = new CustomData<>();
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                success -> {
-                    final SuccessCb<JSONObject, VolleyError> a = new SuccessCb<>(success);
-                    liveData.setValue(a);
-                },
-                error -> {
-                    error.printStackTrace();
-                    final FailCallback<JSONObject, VolleyError> a = new FailCallback<>(error);
-                    liveData.setValue(a);
-                });
+                liveData, liveData);
         mQueue.add(request);
         return liveData;
     }
 
-    public LiveData<Response<Void, VolleyError>> setDriverName_OnDevice(String name) {
+    private <T> CustomData<T> getRequestJson(String url, Class<T> clazz) {
+        CustomData<T> data = new CustomData<>();
+        GsonRequest<T> request = new GsonRequest<>(url, clazz, data);
+        mQueue.add(request);
+        return data;
+    }
+
+    public CustomData<Void> setDriverName_OnDevice(String name) {
         String url = DeviceQueries.createUrlForDriver(name);
         return setRequest(url);
     }
 
-    public LiveData<Response<Void, VolleyError>> setTractorCalibration_OnDevice(
+    public CustomData<Void> setTractorCalibration_OnDevice(
             @Size(4) float[] coefficients, int steeringAxleWeight, String driverName) {
         String url = DeviceQueries.createUrlForTractor(coefficients, steeringAxleWeight, driverName);
         return setRequest(url);
     }
 
-    public LiveData<Response<Void, VolleyError>> setTrailerCalibration_OnDevice(
+    public CustomData<Void> setTrailerCalibration_OnDevice(
             @Size(4) float[] coefficients, String driverName) {
         String url = DeviceQueries.createUrlForTrailer(coefficients, driverName);
         return setRequest(url);
     }
 
-    public LiveData<Response<String, VolleyError>> getHeadConfig_FromDevice() {
+    public CustomData<JsonHeadResponse> getHeadConfig_FromDevice() {
         String url = DeviceQueries.getURLWithHeadConfig();
-        return getRequest(url);
+        return getRequestJson(url, JsonHeadResponse.class);
     }
 
-    public LiveData<Response<String, VolleyError>> getTrailerConfig_FromDevice() {
+    public CustomData<JsonTrailerResponse> getTrailerConfig_FromDevice() {
         String url = DeviceQueries.getURLWithTrailerConfig();
-        return getRequest(url);
+        return getRequestJson(url, JsonTrailerResponse.class);
     }
 
-    public LiveData<Response<JSONObject, VolleyError>> getWeights_FromDevice() {
+    public CustomData<JSONObject> getWeights_FromDevice() {
         String url = DeviceQueries.getURLWithWeights();
         return getRequestJson(url);
     }
