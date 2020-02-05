@@ -1,4 +1,4 @@
-package com.kolesova_violetta.ltc.ui.fragments;
+package com.kolesova_violetta.ltc.ui.fragments.view;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

@@ -3,7 +3,7 @@ package com.kolesova_violetta.ltc.ui.dialogs;
 import android.util.Log;
 
 import static com.kolesova_violetta.ltc.mock.Const.*;
-import static com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment.PREF_PHONE_1;
+import static com.kolesova_violetta.ltc.ui.fragments.view.MonitoringPreferenceFragment.PREF_PHONE_1;
 
 /**
  * Выбор условия корректности данных по preferenceKey

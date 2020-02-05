@@ -6,18 +6,22 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.android.volley.VolleyError;
-import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.datastore.Repository;
-import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
 import com.kolesova_violetta.ltc.ui.dialogs.ConditionalFactory;
+
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
 public class RegistrationViewModel extends ViewModel {
 
     private final MutableLiveData<Boolean> progressVisibilityLiveData = new MutableLiveData<>();
+    private MutableLiveData<Boolean> mRegistered = new MutableLiveData<>();
+
     private Repository mRepo;
     private SharedPreferencesRepository mLocalRepo;
+
+    private CompositeDisposable container = new CompositeDisposable();
 
     public RegistrationViewModel(@NonNull Repository repository,
                                  SharedPreferencesRepository shPrRepository) {
@@ -29,28 +33,31 @@ public class RegistrationViewModel extends ViewModel {
         return progressVisibilityLiveData;
     }
 
-    /**
-     * Сохранение имени водителя в память телефона и датчика
-     */
-    public CustomData<Void> execRegistration(String newDriverName) {
-        progressVisibilityLiveData.postValue(true);
-        return saveDataToDevice(newDriverName);
-    }
-
     public boolean isCorrectName(String name) {
         return (new ConditionalFactory.FullNameConditional().isSuccess(name));
     }
 
-    private CustomData<Void> saveDataToDevice(String name) {
-        return mRepo.setDriverName_OnDevice(name)
-                .map(x -> {
-                    progressVisibilityLiveData.postValue(false);
-                    // После обновления данных на датчике можно сохранить имя в телефон
-                    if (x.isSuccess()) {
-                        saveDataToSharedPreference(name);
-                    }
-                    return x;
-                });
+    /**
+     * Сохранение имени водителя в память телефона и датчика
+     */
+    public void execRegistration(String newDriverName) {
+        progressVisibilityLiveData.postValue(true);
+        container.add(
+                (Disposable) mRepo.saveDriverName_OnDevice(newDriverName)
+                        .doFinally(() -> progressVisibilityLiveData.postValue(false))
+                        .doOnComplete(() -> {
+                            // После обновления данных на датчике можно сохранить имя в телефон
+                            saveDataToSharedPreference(newDriverName);
+                            mRegistered.setValue(true);
+                        })
+                        .doOnError(e -> mRegistered.setValue(false))
+        );
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        container.clear();
     }
 
     private void saveDataToSharedPreference(String fio) {

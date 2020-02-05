@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
-import com.kolesova_violetta.ltc.PartOfCar;
+import com.kolesova_violetta.ltc.model.PartOfCar;
 import com.kolesova_violetta.ltc.R;
 
 /**

@@ -7,23 +7,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.android.volley.Response;
 import com.kolesova_violetta.ltc.BuildConfig;
-import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.datastore.CustomData;
+import com.kolesova_violetta.ltc.handlers.BaseSchedulerProvider;
+import com.kolesova_violetta.ltc.model.Circuit;
 import com.kolesova_violetta.ltc.mock.SmsSenderAfterCalibration;
 import com.kolesova_violetta.ltc.mock.TractorCache;
-import com.kolesova_violetta.ltc.calculations.CalcAndSaveCalibrationData;
+import com.kolesova_violetta.ltc.model.calculations.CalcAndSaveCalibrationData;
 import com.kolesova_violetta.ltc.datastore.Repository;
-import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
 import com.kolesova_violetta.ltc.datastore.device_as_server.DeviceQueries;
 
 import java.util.Arrays;
 import java.util.List;
+
+import io.reactivex.disposables.CompositeDisposable;
 
 public class CalibrationViewModel extends ViewModel {
 
@@ -32,13 +33,19 @@ public class CalibrationViewModel extends ViewModel {
 
     private Repository mRepo;
     private SharedPreferencesRepository mLocalRepo;
+    private BaseSchedulerProvider mSchedulers;
 
     private MutableLiveData<String> mSensorErrorLiveData = new MutableLiveData<>();
+    private MutableLiveData<Boolean> mCoefSaved = new MutableLiveData<>();
+
+    private CompositeDisposable container = new CompositeDisposable();
 
     public CalibrationViewModel(@NonNull Repository repository,
-                                SharedPreferencesRepository shPrRepository) {
+                                SharedPreferencesRepository shPrRepository,
+                                BaseSchedulerProvider schedulerProvider) {
         mRepo = repository;
         mLocalRepo = shPrRepository;
+        mSchedulers = schedulerProvider;
 
         mAxesTractorCount = mLocalRepo.getAxesTractorCount();
         mAxesTrailerCount = mLocalRepo.getAxesTrailerCount();
@@ -48,27 +55,42 @@ public class CalibrationViewModel extends ViewModel {
         return mSensorErrorLiveData;
     }
 
+    public LiveData<Boolean> getCoefSaved() {
+        return mCoefSaved;
+    }
+
     /**
      * Расчитать и сохранить коэффициенты для калибровки датчиков
      */
-    public CustomData<Void> onEndInputWeights(String[] weightsTractor, String[] weightsTrailer) {
+    public void onEndInputWeights(String[] weightsTractor, String[] weightsTrailer) {
         // Сохранение локально
         String driverName = getDriverNameAfterSuccessCalibration();
         String dateTime = getDatetimeAfterSuccessCalibration();
         mLocalRepo.saveCalibration(weightsTractor, weightsTrailer, driverName, dateTime);
         // Сохранение на датчик
-        return makeCalcAndSaveCalibr(mRepo, mLocalRepo).start()
-                .mape(arr -> {
-                    String errSensor = createErrSensorString(arr);
+        container.add(makeCalcAndSaveCalibr(mRepo, mLocalRepo).start()
+                .subscribeOn(mSchedulers.computation())
+                .observeOn(mSchedulers.ui())
+                .subscribe(deviceWorkCorrect -> {
+                    String errSensor = createErrSensorString(deviceWorkCorrect);
                     if (!errSensor.isEmpty()) {
                         mSensorErrorLiveData.postValue(errSensor);
                     }
-                    return Response.success(null);
-                });
+                    mCoefSaved.postValue(true);
+                }, e -> {
+                    mCoefSaved.postValue(false);
+                })
+        );
     }
 
     CalcAndSaveCalibrationData makeCalcAndSaveCalibr(Repository repo, SharedPreferencesRepository shRepo) {
         return new CalcAndSaveCalibrationData(repo, shRepo);
+    }
+
+    @Override
+    protected void onCleared() {
+        container.clear();
+        super.onCleared();
     }
 
     // {true, true} -> "1, 2"
@@ -129,23 +151,27 @@ public class CalibrationViewModel extends ViewModel {
         return mAxesTrailerCount;
     }
 
+    public String getPreferenceValue(String key, String def) {
+        return mLocalRepo.getString(key, def);
+    }
+
     public static class Factory implements ViewModelProvider.Factory {
         private Repository repository;
         private SharedPreferencesRepository sharedPreferencesRepository;
+        private BaseSchedulerProvider mSchedulers;
 
-        public Factory(Repository repository, SharedPreferencesRepository sharedPreferencesRepository) {
+        public Factory(Repository repository,
+                       SharedPreferencesRepository sharedPreferencesRepository,
+                       BaseSchedulerProvider schedulers) {
             this.repository = repository;
             this.sharedPreferencesRepository = sharedPreferencesRepository;
+            this.mSchedulers = schedulers;
         }
 
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new CalibrationViewModel(repository, sharedPreferencesRepository);
+            return (T) new CalibrationViewModel(repository, sharedPreferencesRepository, mSchedulers);
         }
-    }
-
-    public String getPreferenceValue(String key, String def) {
-        return mLocalRepo.getString(key, def);
     }
 }

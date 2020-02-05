@@ -1,20 +1,19 @@
-package com.kolesova_violetta.ltc.calculations;
+package com.kolesova_violetta.ltc.model.calculations;
 
 import android.util.Log;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Size;
-import androidx.lifecycle.LiveData;
 
 import com.kolesova_violetta.ltc.BuildConfig;
-import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.datastore.CustomData;
+import com.kolesova_violetta.ltc.model.Circuit;
 import com.kolesova_violetta.ltc.datastore.Repository;
-import com.kolesova_violetta.ltc.datastore.Response;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Single;
 
 import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
 
@@ -25,7 +24,7 @@ public abstract class CalcCalibrCoefExecutor {
         mRepository = repository;
     }
 
-    abstract public CustomData<float[]> runCalc(List<Circuit> circuits);
+    abstract public Single<float[]> runCalc(List<Circuit> circuits);
 
     float[] calcCoefficients(@NonNull List<Circuit> circuits, @IntRange(from = 1) int U_0,
                              @NonNull @Size(4) int[] acd) {

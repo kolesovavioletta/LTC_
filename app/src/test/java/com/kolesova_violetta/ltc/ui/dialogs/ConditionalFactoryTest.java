@@ -10,7 +10,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment.PREF_PHONE_1;
+import static com.kolesova_violetta.ltc.ui.fragments.view.MonitoringPreferenceFragment.PREF_PHONE_1;
 
 public class ConditionalFactoryTest {
 

@@ -7,18 +7,18 @@ import android.util.Log;
 import androidx.preference.PreferenceManager;
 
 import com.kolesova_violetta.ltc.BuildConfig;
-import com.kolesova_violetta.ltc.Circuit;
+import com.kolesova_violetta.ltc.model.Circuit;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static com.kolesova_violetta.ltc.mock.Const.*;
-import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_AXLE_TRACTOR;
-import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_AXLE_TRAILER;
-import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_CALIBRATION_DATE;
-import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_CALIBRATION_DRIVER_NAME;
-import static com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment.PREF_WEIGHT_AXLE_UNDER_CAB;
+import static com.kolesova_violetta.ltc.ui.fragments.view.CalibrationPreferenceFragment.PREF_AXLE_TRACTOR;
+import static com.kolesova_violetta.ltc.ui.fragments.view.CalibrationPreferenceFragment.PREF_AXLE_TRAILER;
+import static com.kolesova_violetta.ltc.ui.fragments.view.CalibrationPreferenceFragment.PREF_CALIBRATION_DATE;
+import static com.kolesova_violetta.ltc.ui.fragments.view.CalibrationPreferenceFragment.PREF_CALIBRATION_DRIVER_NAME;
+import static com.kolesova_violetta.ltc.ui.fragments.view.CalibrationPreferenceFragment.PREF_WEIGHT_AXLE_UNDER_CAB;
 
 
 /**
@@ -247,7 +247,7 @@ public class SharedPreferencesRepository {
     public String[] getWeightsAxes(String nameAxlePrefOfTractorOrTrailer, int axesCount) {
         String[] weightAxes = new String[axesCount];
         for (int i = 0; i < axesCount; i++) {
-            weightAxes[i] = getStrWeightAxle(nameAxlePrefOfTractorOrTrailer, i);
+            weightAxes[i] = getStrWeightAxle(nameAxlePrefOfTractorOrTrailer, i + 1);
         }
         return weightAxes;
     }

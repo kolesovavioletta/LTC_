@@ -2,7 +2,7 @@ package com.kolesova_violetta.ltc.mock;
 
 import android.content.Context;
 
-import com.kolesova_violetta.ltc.Circuit;
+import com.kolesova_violetta.ltc.model.Circuit;
 
 import java.util.List;
 

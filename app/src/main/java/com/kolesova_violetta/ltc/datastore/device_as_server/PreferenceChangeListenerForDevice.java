@@ -10,7 +10,7 @@ import java.util.Set;
 
 import static com.kolesova_violetta.ltc.mock.Const.CIRCUITS_COUNT;
 import static com.kolesova_violetta.ltc.mock.Const.PREF_DRIVER_NAME;
-import static com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment.PREF_PHONE_1;
+import static com.kolesova_violetta.ltc.ui.fragments.view.MonitoringPreferenceFragment.PREF_PHONE_1;
 
 public class PreferenceChangeListenerForDevice {
 

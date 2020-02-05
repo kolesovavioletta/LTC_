@@ -1,4 +1,4 @@
-package com.kolesova_violetta.ltc.ui.fragments;
+package com.kolesova_violetta.ltc.ui.fragments.view;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -18,10 +17,10 @@ import androidx.preference.SwitchPreference;
 
 import com.kolesova_violetta.ltc.BuildConfig;
 import com.kolesova_violetta.ltc.R;
-import com.kolesova_violetta.ltc.datastore.CustomData;
+import com.kolesova_violetta.ltc.handlers.BaseSchedulerProvider;
+import com.kolesova_violetta.ltc.handlers.SchedulerProvider;
 import com.kolesova_violetta.ltc.mock.SmsSender;
 import com.kolesova_violetta.ltc.datastore.Repository;
-import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
 import com.kolesova_violetta.ltc.datastore.device_as_server.try_connect.InternetConnectivityListener;
 import com.kolesova_violetta.ltc.ui.UiHelper;
@@ -70,10 +69,18 @@ public class CalibrationPreferenceFragment extends CustomPreferenceFragment
         // set ViewModel
         Repository r1 = new Repository(getContext());
         SharedPreferencesRepository r2 = new SharedPreferencesRepository(getContext());
-        CalibrationViewModel.Factory vmFactory = new CalibrationViewModel.Factory(r1, r2);
+        BaseSchedulerProvider schedulerProvider = new SchedulerProvider();
+        CalibrationViewModel.Factory vmFactory = new CalibrationViewModel.Factory(r1, r2, schedulerProvider);
         mViewModel = ViewModelProviders.of(this, vmFactory).get(CalibrationViewModel.class);
 
         mViewModel.getSensorErrorLiveData().observe(this, this::createErrSensorDialog);
+        mViewModel.getCoefSaved().observe(this, success -> {
+            if (success) {
+                refreshScreen(getPreferenceScreen());
+                sendSmsAfterCalibration();
+            }
+            createResultDialog(success);
+        });
     }
 
     @Override
@@ -162,22 +169,8 @@ public class CalibrationPreferenceFragment extends CustomPreferenceFragment
     private void onFinishCalibration(DialogFragment dialog) {
         ((ShowingProgressDialogFromFragment) getActivity()).showProgressDialog(true);
         CalibrationDialog calibrDialog = (CalibrationDialog) dialog;
-        CustomData<Void> saveCoefficientLD = mViewModel.onEndInputWeights(
-                calibrDialog.getTractorWeights(), calibrDialog.getTrailerWeights()
-        );
-        saveCoefficientLD.observe(this, this::onFinishSaveCoefficients);
-    }
-
-    private void onFinishSaveCoefficients(Response<Void, Exception> response) {
-        if (response.isSuccess()) {
-            refreshScreen(getPreferenceScreen());
-            createResultDialog(true);
-            sendSmsAfterCalibration();
-        } else {
-            if (response.getError() != null) {
-                createResultDialog(false);
-            }
-        }
+        mViewModel.onEndInputWeights(
+                calibrDialog.getTractorWeights(), calibrDialog.getTrailerWeights());
     }
 
     @Override

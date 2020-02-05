@@ -1,4 +1,4 @@
-package com.kolesova_violetta.ltc.ui.fragments;
+package com.kolesova_violetta.ltc.ui.fragments.view;
 
 public interface ExitFromFragment {
     int EXIT_MONITORING = 11;

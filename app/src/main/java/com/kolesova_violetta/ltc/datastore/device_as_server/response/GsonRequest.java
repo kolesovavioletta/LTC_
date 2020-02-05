@@ -7,10 +7,12 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.kolesova_violetta.ltc.datastore.CustomData;
 
 import java.io.UnsupportedEncodingException;
 
+/**
+ * Запрос с преобразованием ответа к классу T
+ */
 public class GsonRequest<T> extends JsonRequest<T> {
     private final Gson gson = new Gson();
     private final Class<T> clazz;
@@ -21,8 +23,8 @@ public class GsonRequest<T> extends JsonRequest<T> {
      * @param url URL of the request to make
      * @param clazz Relevant class object, for Gson's reflection
      */
-    public GsonRequest(String url, Class<T> clazz, CustomData<T> customData) {
-        super(Method.GET, url, null, customData, customData);
+    public GsonRequest(String url, Class<T> clazz, Response.Listener<T> success, Response.ErrorListener error) {
+        super(Method.GET, url, null, success, error);
         this.clazz = clazz;
     }
 

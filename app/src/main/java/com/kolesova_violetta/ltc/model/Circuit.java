@@ -1,4 +1,4 @@
-package com.kolesova_violetta.ltc;
+package com.kolesova_violetta.ltc.model;
 
 import androidx.annotation.NonNull;
 

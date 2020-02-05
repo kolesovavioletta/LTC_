@@ -15,9 +15,9 @@ import androidx.preference.PreferenceScreen;
 
 import com.kolesova_violetta.ltc.R;
 import com.kolesova_violetta.ltc.ui.UiHelper;
-import com.kolesova_violetta.ltc.ui.fragments.CalibrationPreferenceFragment;
-import com.kolesova_violetta.ltc.ui.fragments.MonitoringPreferenceFragment;
-import com.kolesova_violetta.ltc.ui.fragments.SwitchingFragmentsOfSettingAct;
+import com.kolesova_violetta.ltc.ui.fragments.view.CalibrationPreferenceFragment;
+import com.kolesova_violetta.ltc.ui.fragments.view.MonitoringPreferenceFragment;
+import com.kolesova_violetta.ltc.ui.fragments.view.SwitchingFragmentsOfSettingAct;
 
 /**
  * Класс управляет фрагментами и основными графическими событиями (фрагмент с загаловками и

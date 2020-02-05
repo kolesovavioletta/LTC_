@@ -1,17 +1,13 @@
-package com.kolesova_violetta.ltc.calculations;
+package com.kolesova_violetta.ltc.model.calculations;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 
-import com.android.volley.VolleyError;
-import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.datastore.CustomData;
 import com.kolesova_violetta.ltc.datastore.Repository;
-import com.kolesova_violetta.ltc.datastore.Response;
 import com.kolesova_violetta.ltc.datastore.SharedPreferencesRepository;
 import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonHeadResponse;
 import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonTrailerResponse;
+import com.kolesova_violetta.ltc.exception.DeviceException;
+import com.kolesova_violetta.ltc.model.Circuit;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,22 +22,18 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Тестирование класса {@link CalcAndSaveCalibrationData}. Акценты:
- *  - 4 типа установки + с прицепом или без
- *  - одностор. / двустор. контура
- *  - прогрешность массы оси (50кг)
- *  - прохождение теста с N попытки (N > 1 && N < 20)
- *  - датчики сломаны (получаемый массив в ответе)
- */
 @Config(maxSdk = 28, minSdk = 28)
 @RunWith(RobolectricTestRunner.class)
 public class CalcAndSaveCalibrationDataTest {
@@ -50,36 +42,32 @@ public class CalcAndSaveCalibrationDataTest {
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
     @Mock
-    private Observer<Response<boolean[], Exception>> observer;
-    @Mock
     private Repository rRepo;
     @Mock
     private SharedPreferencesRepository lRepo;
 
-    private CalcAndSaveCalibrationData calc;
-    private CustomData<boolean[]> end;
+    private TestObserver<boolean[]> observer;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        calc = new CalcAndSaveCalibrationData(rRepo, lRepo);
+
         when(lRepo.getDriverName()).thenReturn("DriverName");
         when(lRepo.getSteeringAxleWeight()).thenReturn(150);
 
         JsonHeadResponse jsonHeadResponse = new JsonHeadResponse();
         jsonHeadResponse.setAllHeadAcd("5000", "10000", "15000", "20000");
-        CustomData<JsonHeadResponse> headResponseCustomData = CustomData.getInstance(jsonHeadResponse);
+        Single<JsonHeadResponse> headResponseCustomData = Single.just(jsonHeadResponse);
         when(rRepo.getHeadConfig_FromDevice()).thenReturn(headResponseCustomData);
 
         JsonTrailerResponse jsonTrailerResponse = new JsonTrailerResponse("5000", "15000", "25000", "35000");
-        CustomData<JsonTrailerResponse> trailerResponseCustomData = CustomData.getInstance(jsonTrailerResponse);
+        Single<JsonTrailerResponse> trailerResponseCustomData = Single.just(jsonTrailerResponse);
         when(rRepo.getTrailerConfig_FromDevice()).thenReturn(trailerResponseCustomData);
     }
 
     @After
     public void tearDown() throws Exception {
-        end.removeObserver(observer);
-        end = null;
+        observer.dispose();
         observer = null;
     }
 
@@ -94,12 +82,22 @@ public class CalcAndSaveCalibrationDataTest {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        when(rRepo.getWeights_FromDevice())
-                .thenReturn( CustomData.getInstance(weights) );
+        setWeights(weights);
+        startCalc();
 
-        end = calc.start();
-        end.observeForever(observer);
-        verify(observer).onChanged(Response.success(new boolean[]{false, false}));
+        observer
+                .assertNoErrors()
+                .assertValue(arr -> Arrays.equals(arr, new boolean[]{false, false}));
+    }
+
+    private void setWeights(JSONObject weights) {
+        when(rRepo.getWeights_FromDevice_Json()).thenReturn(Single.just(weights));
+    }
+
+    private void startCalc() {
+        observer = new CalcAndSaveCalibrationData(rRepo, lRepo)
+                .start()
+                .test();
     }
 
     @Test
@@ -113,12 +111,12 @@ public class CalcAndSaveCalibrationDataTest {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        when(rRepo.getWeights_FromDevice())
-                .thenReturn( CustomData.getInstance(weights) );
+        setWeights(weights);
+        startCalc();
 
-        end = calc.start();
-        end.observeForever(observer);
-        verify(observer).onChanged(Response.success(new boolean[]{false, false}));
+        observer
+                .assertNoErrors()
+                .assertValue(arr -> Arrays.equals(arr, new boolean[]{false, false}));
     }
 
     @Test
@@ -132,14 +130,12 @@ public class CalcAndSaveCalibrationDataTest {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        when(rRepo.getWeights_FromDevice())
-                .thenReturn( CustomData.getInstance(weights) );
+        setWeights(weights);
+        startCalc();
 
-        end = calc.start();
-        end.observeForever(observer);
-        verify(observer).onChanged(
-                Response.error(new IndexOutOfBoundsException(
-                        "the limit of attempts to write data to the device has been exhausted")));
+        observer
+                .assertNoValues()
+                .assertError(DeviceException.class);
     }
 
     // тип установки - 2 блока. По 1 двустор. на тягаче и на прицепе
@@ -148,24 +144,24 @@ public class CalcAndSaveCalibrationDataTest {
         //--- тягач
         List<Circuit> circuitH = new ArrayList<>();
         circuitH.add(new Circuit(2, "2", "A1", 300));
-        installHead(circuitH, CustomData.getInstance(null));
+        installHead(circuitH, Completable.complete());
         //--- прицеп
         when(lRepo.isExistTrailer()).thenReturn(true);
 
         List<Circuit> circuitT = new ArrayList<>();
         circuitT.add(new Circuit(3, "2", "B1", 800));
 
-        installTrailer(circuitT, CustomData.getInstance(null));
+        installTrailer(circuitT, Completable.complete());
     }
 
-    private void installHead(List<Circuit> circuits, CustomData<Void> onSave) {
+    private void installHead(List<Circuit> circuits, Completable onSave) {
         when(lRepo.getCircuitsTractor()).thenReturn(circuits);
 
         when(rRepo.setTractorCalibration_OnDevice(any(), anyInt(), anyString()))
                 .thenReturn(onSave);
     }
 
-    private void installTrailer(List<Circuit> circuits, CustomData<Void> onSave) {
+    private void installTrailer(List<Circuit> circuits, Completable onSave) {
         when(lRepo.getCircuitsTrailer()).thenReturn(circuits);
 
         when(rRepo.setTrailerCalibration_OnDevice(any(), anyString()))
@@ -187,12 +183,12 @@ public class CalcAndSaveCalibrationDataTest {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        when(rRepo.getWeights_FromDevice())
-                .thenReturn( CustomData.getInstance(weights) );
+        setWeights(weights);
+        startCalc();
 
-        end = calc.start();
-        end.observeForever(observer);
-        verify(observer).onChanged(Response.success(new boolean[]{false, false}));
+        observer
+                .assertNoErrors()
+                .assertValue(arr -> Arrays.equals(arr, new boolean[]{false, false}));
     }
 
     // тип установки - 2 блока. Тягач: 1 двуст. + 1 пара одностор.; Прицеп: 1 пара одностор. + 1 двуст.
@@ -201,14 +197,14 @@ public class CalcAndSaveCalibrationDataTest {
         //--- тягач
         List<Circuit> circuitH = new ArrayList<>();
         circuitH.add(new Circuit(2, "2", "A1", 300));
-        circuitH.add(new Circuit(1, "1", "A3","A4", 600));
-        installHead(circuitH, CustomData.getInstance(null));
+        circuitH.add(new Circuit(1, "1", "A3", "A4", 600));
+        installHead(circuitH, Completable.complete());
         //--- прицеп
         when(lRepo.isExistTrailer()).thenReturn(true);
 
         List<Circuit> circuitT = new ArrayList<>();
-        circuitT.add(new Circuit(2, "1", "B1","B3", 200));
+        circuitT.add(new Circuit(2, "1", "B1", "B3", 200));
         circuitT.add(new Circuit(1, "2", "B2", 600));
-        installTrailer(circuitT, CustomData.getInstance(null));
+        installTrailer(circuitT, Completable.complete());
     }
 }

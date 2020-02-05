@@ -1,7 +1,6 @@
-package com.kolesova_violetta.ltc.calculations;
+package com.kolesova_violetta.ltc.model.calculations;
 
-import com.kolesova_violetta.ltc.Circuit;
-import com.kolesova_violetta.ltc.calculations.CalcCalibrCoefExecutor;
+import com.kolesova_violetta.ltc.model.Circuit;
 
 import org.junit.After;
 import org.junit.Assert;

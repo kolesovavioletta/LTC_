@@ -18,6 +18,9 @@ import com.kolesova_violetta.ltc.datastore.device_as_server.response.JsonTrailer
 
 import org.json.JSONObject;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+
 /**
  * Передача/получение данных с датчика
  */
@@ -33,58 +36,70 @@ public class Repository {
         mQueue = queue;
     }
 
-    public CustomData<Void> setRequest(String url) {
-        final CustomData<String> liveData = new CustomData<>();
-        StringRequest request = new StringRequest(Request.Method.GET, url, liveData, liveData);
-        mQueue.add(request);
-        return liveData.mape(val -> Response.success(null));
+    private Single<JSONObject> getRequestJsonObject(String url) {
+        return Single.create(e -> {
+            JsonObjectRequest request =
+                    new JsonObjectRequest(Request.Method.GET, url, null, e::onSuccess, e::onError);
+            mQueue.add(request);
+        });
     }
 
-    private CustomData<JSONObject> getRequestJson(String url) {
-        final CustomData<JSONObject> liveData = new CustomData<>();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                liveData, liveData);
-        mQueue.add(request);
-        return liveData;
+    private <T> Single<T> getRequestJsonResponse(String url, Class<T> clazz) {
+        return Single.create(e -> {
+            GsonRequest<T> request = new GsonRequest<>(url, clazz, e::onSuccess, e::onError);
+            mQueue.add(request);
+        });
     }
 
-    private <T> CustomData<T> getRequestJson(String url, Class<T> clazz) {
-        CustomData<T> data = new CustomData<>();
-        GsonRequest<T> request = new GsonRequest<>(url, clazz, data);
-        mQueue.add(request);
-        return data;
+    private Single<String> getRequestString(String url) {
+        return Single.create(e -> {
+            StringRequest request = new StringRequest(Request.Method.GET, url, e::onSuccess, e::onError);
+            mQueue.add(request);
+        });
     }
 
-    public CustomData<Void> setDriverName_OnDevice(String name) {
+    private Completable setRequest(String url) {
+        return Completable.create(e -> {
+            StringRequest request = new StringRequest(Request.Method.GET, url,
+                    x -> e.onComplete(), e::onError);
+            mQueue.add(request);
+        });
+    }
+
+
+    //----------------------------------------------------------------------------------------------
+
+
+    public Completable saveDriverName_OnDevice(String name) {
         String url = DeviceQueries.createUrlForDriver(name);
         return setRequest(url);
     }
 
-    public CustomData<Void> setTractorCalibration_OnDevice(
+    public Completable setTractorCalibration_OnDevice(
             @Size(4) float[] coefficients, int steeringAxleWeight, String driverName) {
         String url = DeviceQueries.createUrlForTractor(coefficients, steeringAxleWeight, driverName);
         return setRequest(url);
     }
 
-    public CustomData<Void> setTrailerCalibration_OnDevice(
+    public Completable setTrailerCalibration_OnDevice(
             @Size(4) float[] coefficients, String driverName) {
         String url = DeviceQueries.createUrlForTrailer(coefficients, driverName);
         return setRequest(url);
     }
 
-    public CustomData<JsonHeadResponse> getHeadConfig_FromDevice() {
+    public Single<JsonHeadResponse> getHeadConfig_FromDevice() {
         String url = DeviceQueries.getURLWithHeadConfig();
-        return getRequestJson(url, JsonHeadResponse.class);
+        return getRequestJsonResponse(url, JsonHeadResponse.class);
     }
 
-    public CustomData<JsonTrailerResponse> getTrailerConfig_FromDevice() {
+    public Single<JsonTrailerResponse> getTrailerConfig_FromDevice() {
         String url = DeviceQueries.getURLWithTrailerConfig();
-        return getRequestJson(url, JsonTrailerResponse.class);
+        return getRequestJsonResponse(url, JsonTrailerResponse.class);
     }
 
-    public CustomData<JSONObject> getWeights_FromDevice() {
+    public Single<JSONObject> getWeights_FromDevice_Json() {
         String url = DeviceQueries.getURLWithWeights();
-        return getRequestJson(url);
+        return getRequestJsonObject(url);
     }
 }
 
